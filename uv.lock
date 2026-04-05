@@ -332,7 +332,7 @@ wheels = [
 ]
 
 [[package]]
-name = "enflow"
+name = "emflow"
 version = "0.0.3"
 source = { editable = "." }
 dependencies = [

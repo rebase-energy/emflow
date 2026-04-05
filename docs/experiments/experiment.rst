@@ -1,7 +1,7 @@
 Experiment
 ============
 
-.. automodule:: enflow.experiments.experiment
+.. automodule:: emflow.experiments.experiment
    :members:
    :undoc-members:
    :show-inheritance:

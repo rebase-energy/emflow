@@ -1,7 +1,7 @@
 Base
 =============
 
-.. automodule:: enflow.assets.base
+.. automodule:: emflow.assets.base
     :members:
     :undoc-members:
     :show-inheritance:

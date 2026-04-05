@@ -1,2 +1,2 @@
 exclude examples/*
-recursive-include enflow/examples/data *.csv
+recursive-include emflow/examples/data *.csv

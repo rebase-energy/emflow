@@ -3,7 +3,7 @@ requires = ["setuptools>=64.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "enflow"
+name = "emflow"
 version = "0.0.3.post1"
 authors = [
     { name = "rebase.energy" }
@@ -18,9 +18,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://enflow.org"
-Repository = "https://github.com/rebase-energy/enflow"
-Documentation = "https://docs.enflow.org/en/latest"
+Homepage = "https://emflow.org"
+Repository = "https://github.com/rebase-energy/emflow"
+Documentation = "https://docs.emflow.org/en/latest"
 
 [project.optional-dependencies]
 dev = [
@@ -39,4 +39,4 @@ dev = [
 where = ["."]
 
 [tool.setuptools.package-data]
-"enflow.examples.data" = ["*.csv"]
+"emflow.examples.data" = ["*.csv"]

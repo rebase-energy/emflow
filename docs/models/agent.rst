@@ -1,7 +1,7 @@
 Agent
 ============
 
-.. automodule:: enflow.models.agent
+.. automodule:: emflow.models.agent
    :members:
    :undoc-members:
    :show-inheritance:

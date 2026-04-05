@@ -1,7 +1,7 @@
 Geospatial
 =============
 
-.. automodule:: enflow.assets.geospatial
+.. automodule:: emflow.assets.geospatial
     :members:
     :undoc-members:
     :show-inheritance:

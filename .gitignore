@@ -3,9 +3,9 @@
 __pycache__/
 dist/*
 build/*
-enflow.egg-info/*
+emflow.egg-info/*
 docs/_build/*
 .ipynb_checkpoints
 .venv
-enflow/examples/heftcom2024/data/
-enflow/examples/solar_battery/data/
+emflow/examples/heftcom2024/data/
+emflow/examples/solar_battery/data/

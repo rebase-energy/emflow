@@ -1,7 +1,7 @@
 Hydro
 =============
 
-.. automodule:: enflow.assets.hydro
+.. automodule:: emflow.assets.hydro
     :members:
     :undoc-members:
     :show-inheritance:

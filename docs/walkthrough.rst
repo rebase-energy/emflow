@@ -1,7 +1,7 @@
-Walkthrough of the `enflow` framework
+Walkthrough of the `emflow` framework
 ---------------------------------
 
-This guide provides a step-by-step approach to setting up and running a simulation using the `enflow` library. Follow these steps to create a comprehensive energy resource simulation.
+This guide provides a step-by-step approach to setting up and running a simulation using the `emflow` library. Follow these steps to create a comprehensive energy resource simulation.
 
 Step 1: Define Your Energy Assets
 ---------------------------------
@@ -11,7 +11,7 @@ Begin by defining the energy assets in your simulation. This includes any resour
 .. code-block:: python
 
     # Define your energy assets
-    assets = enflow.define_assets(...)
+    assets = emflow.define_assets(...)
     # Add more details specific to your energy assets.
 
 Step 2: Specify Dynamic State Variables
@@ -22,7 +22,7 @@ Next, outline the dynamic state variables. These are the variables that represen
 .. code-block:: python
 
     # Define state variables
-    state_variables = enflow.define_state(...)
+    state_variables = emflow.define_state(...)
     # Provide more specifics about your state variables.
 
 Step 3: Define Action Variables
@@ -33,7 +33,7 @@ Now, define the action variables. These are the variables that represent the act
 .. code-block:: python
 
     # Define action variables
-    actions = enflow.define_actions(...)
+    actions = emflow.define_actions(...)
     # Elaborate on the possible actions in your simulation.
 
 Step 4: Create the Environment
@@ -44,7 +44,7 @@ Create the simulation environment. This includes defining the transition functio
 .. code-block:: python
 
     # Create the environment
-    environment = enflow.create_environment(assets, state_variables, actions)
+    environment = emflow.create_environment(assets, state_variables, actions)
     # Further details on setting up the environment.
 
 Step 5: Establish the Objective Function
@@ -55,7 +55,7 @@ Define the objective function. This function should quantify the goal of the sim
 .. code-block:: python
 
     # Define the objective function
-    objective = enflow.define_objective(...)
+    objective = emflow.define_objective(...)
     # Additional information on your specific objective function.
 
 Step 6: Design Agents' Policies
@@ -66,7 +66,7 @@ Design the policy for your agents. This involves specifying the strategy that th
 .. code-block:: python
 
     # Design agent policies
-    agent_policy = enflow.design_policy(...)
+    agent_policy = emflow.design_policy(...)
     # More details on how to design and implement these policies.
 
 Step 7: Run the Simulated Environment
@@ -77,11 +77,11 @@ Finally, run the simulation with the defined assets, environment, and agent poli
 .. code-block:: python
 
     # Run the simulation
-    simulation_results = enflow.run_simulation(environment, agent_policy)
+    simulation_results = emflow.run_simulation(environment, agent_policy)
     # Instructions on how to run and what to expect from the simulation.
 
 Conclusion
 ----------
 
-Following these steps will allow you to create a detailed and functional simulation using the `enflow` library. Explore different configurations and policies to fully understand the capabilities and dynamics of your energy resource model.
+Following these steps will allow you to create a detailed and functional simulation using the `emflow` library. Explore different configurations and policies to fully understand the capabilities and dynamics of your energy resource model.
 

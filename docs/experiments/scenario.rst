@@ -1,7 +1,7 @@
 Scenario
 =========
 
-.. automodule:: enflow.experiments.scenario
+.. automodule:: emflow.experiments.scenario
    :members:
    :undoc-members:
    :show-inheritance:

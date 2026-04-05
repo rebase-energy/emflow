@@ -1,7 +1,7 @@
 Energy Collection
 =================
 
-.. automodule:: enflow.assets.energycollection
+.. automodule:: emflow.assets.energycollection
     :members:
     :undoc-members:
     :show-inheritance:

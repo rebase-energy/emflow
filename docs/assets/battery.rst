@@ -1,7 +1,7 @@
 Battery
 =============
 
-.. automodule:: enflow.assets.battery
+.. automodule:: emflow.assets.battery
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,7 +1,7 @@
 Predictor
 ============
 
-.. automodule:: enflow.models.predictor
+.. automodule:: emflow.models.predictor
    :members:
    :undoc-members:
    :show-inheritance:

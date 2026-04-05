@@ -1,7 +1,7 @@
 Input Space
 ============
 
-.. automodule:: enflow.spaces.input
+.. automodule:: emflow.spaces.input
    :members:
    :undoc-members:
    :show-inheritance:
