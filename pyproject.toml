@@ -15,6 +15,8 @@ requires-python = ">=3.12"
 dependencies = [
     "energydatamodel>=0.7.0,<0.8.0",
     "gymnasium>=1.1.1",
+    "fsspec>=2023.1.0",
+    "huggingface_hub>=0.20",  # Hugging Face-backed rb:// filesystem
 ]
 
 [project.urls]
@@ -22,10 +24,18 @@ Homepage = "https://emflow.org"
 Repository = "https://github.com/rebase-energy/emflow"
 Documentation = "https://docs.emflow.org/en/latest"
 
+# Make the ``rb://`` scheme discoverable by fsspec without an explicit
+# ``import emflow`` — same mechanism huggingface_hub uses for ``hf://``.
+[project.entry-points."fsspec.specs"]
+rb = "emflow.io.rebasefs:RebaseFileSystem"
+
 [project.optional-dependencies]
 examples = [
     "matplotlib>=3.8",
     "plotly>=5.0",
+]
+submissions = [
+    "huggingface_hub>=0.20",
 ]
 dev = [
     "build>=1.2.2",

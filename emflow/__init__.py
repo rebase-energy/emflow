@@ -28,4 +28,11 @@ from .utils.loader import list_problems, load_problem
 from .experiments.experiment import Experiment
 from .experiments.verifier import Verifier
 
-__all__ = ['list_problems', 'load_problem', 'Experiment', 'Verifier']
+# Register the Hugging Face-backed ``rb://`` fsspec filesystem so
+# pandas/polars/duckdb understand it. huggingface_hub is imported lazily on
+# first rb:// use, so this stays cheap and keeps the dep optional at import.
+from .io.rebasefs import RebaseFileSystem, RebaseIncompatibleError, register as _register_rb
+_register_rb()
+
+__all__ = ['list_problems', 'load_problem', 'Experiment', 'Verifier',
+           'RebaseFileSystem', 'RebaseIncompatibleError']
