@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "emflow"
-version = "0.0.3.post1"
+version = "0.1.0"
 authors = [
     { name = "rebase.energy" }
 ]
@@ -13,7 +13,7 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
-    "energydatamodel>=0.0.2",
+    "energydatamodel==0.0.4",
     "gymnasium>=1.1.1",
 ]
 
@@ -29,6 +29,7 @@ dev = [
     "ipywidgets>=8.1.5",
     "myst-parser>=4.0.1",
     "nbsphinx>=0.9.7",
+    "pyarrow>=15.0.0",
     "sphinx==7.2.6",
     "sphinx-autodoc-typehints>=2.0.1",
     "sphinx-rtd-theme>=3.0.2",    
@@ -39,4 +40,4 @@ dev = [
 where = ["."]
 
 [tool.setuptools.package-data]
-"emflow.examples.data" = ["*.csv"]
+"emflow.examples.data" = ["*.csv", "*.parquet"]
