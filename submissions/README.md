@@ -35,7 +35,34 @@ Subclass `emflow.Predictor` (see `template_submission.py`):
    This prints a scorecard (your MAE/RMSE vs persistence and seasonal-naive baselines,
    `PASS` if you beat persistence) and appends a row to `submissions/leaderboard.csv`.
 
-3. Send your `submission.py`. We run the same command to produce the official score.
+3. Submit your model — either send the `submission.py` file directly, or upload it to a
+   HuggingFace repo (see below).
+
+## Submit via HuggingFace
+
+The intern uploads `submission.py` to a HuggingFace repo and shares the repo id:
+
+```python
+from huggingface_hub import HfApi
+api = HfApi()                                  # set HF_TOKEN for a private repo
+api.create_repo("your-username/emflow-submission", repo_type="model", exist_ok=True)
+api.upload_file(path_or_fileobj="submission.py", path_in_repo="submission.py",
+                repo_id="your-username/emflow-submission", repo_type="model")
+```
+
+The evaluator then verifies it straight from the Hub (needs the `submissions` extra:
+`uv sync --extra submissions`):
+
+```bash
+python scripts/verify_submission.py hf://your-username/emflow-submission/submission.py \
+    --revision <commit-sha>          # pin a commit for reproducibility (recommended)
+# add --repo-type dataset if it was uploaded to a dataset repo
+```
+
+For a private repo, set `HF_TOKEN` (or `HUGGINGFACE_TOKEN`) in the environment before
+running. The downloaded file is then trained + scored by the same strict walk-forward
+verifier, so the leakage guarantees are identical to the local path.
 
 > **Note (for whoever runs the verifier):** `verify_submission.py` imports and executes
-> the submission file. Only run code from people you trust.
+> the submission file — local *or downloaded from HuggingFace*. Only run code from people
+> you trust, and prefer pinning `--revision` to a commit SHA.
