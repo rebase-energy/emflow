@@ -19,6 +19,7 @@ emflow: Open-source energy modelling framework
 
    notebooks/gefcom2014_solar
    notebooks/heftcom2024
+   notebooks/swedish_temperatures
 
 .. toctree::
    :maxdepth: 1
