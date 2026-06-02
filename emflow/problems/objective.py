@@ -8,11 +8,46 @@ class Objective(ABC):
         """Subclasses must implement this method."""
         pass
 
+def _to_array(x):
+    """Coerce a DataFrame/Series/list/ndarray of values to a float ndarray."""
+    if isinstance(x, (pd.DataFrame, pd.Series)):
+        return x.to_numpy(dtype=float)
+    return np.asarray(x, dtype=float)
+
+
 class MeanSquaredError(Objective):
-    pass
+    def __init__(self):
+        self._name = "MeanSquaredError"
+
+    @property
+    def name(self):
+        return self._name
+
+    def calculate(self, y_true, y_pred, mean=True, squared=True):
+        """Mean squared error (or RMSE when ``squared=False``), nan-aware.
+
+        NaN entries in either ``y_true`` or ``y_pred`` are ignored pairwise.
+        Returns a scalar when ``mean=True``, else the element-wise errors.
+        """
+        errors = (_to_array(y_true) - _to_array(y_pred)) ** 2
+        if not mean:
+            return errors
+        mse = np.nanmean(errors)
+        return mse if squared else np.sqrt(mse)
+
 
 class MeanAbsoluteError(Objective):
-    pass
+    def __init__(self):
+        self._name = "MeanAbsoluteError"
+
+    @property
+    def name(self):
+        return self._name
+
+    def calculate(self, y_true, y_pred, mean=True):
+        """Mean absolute error, nan-aware (NaNs ignored pairwise)."""
+        errors = np.abs(_to_array(y_true) - _to_array(y_pred))
+        return np.nanmean(errors) if mean else errors
 
 class PinballLoss(Objective):
     def __init__(self, quantiles):
