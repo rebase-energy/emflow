@@ -272,7 +272,7 @@ class GEFCom2014SolarEnv(gym.Env):
         fig.show()
 
 def list_problem_variants():
-    return ["simple", "full"]
+    return ["simple"]
 
 def get_problem_simple():
     action_space = make_action_space(3)
