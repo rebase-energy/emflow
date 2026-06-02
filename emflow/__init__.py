@@ -25,4 +25,7 @@ from .problems.objective import PinballLoss
 
 from .utils.loader import list_problems, load_problem
 
-__all__ = ['list_problems', 'load_problem']
+from .experiments.experiment import Experiment
+from .experiments.verifier import Verifier
+
+__all__ = ['list_problems', 'load_problem', 'Experiment', 'Verifier']
