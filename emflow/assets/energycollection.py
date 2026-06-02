@@ -1,3 +1,3 @@
-from energydatamodel.collection import Site, EnergyCommunity, Portfolio
+from energydatamodel import Site, EnergyCommunity, Portfolio
 
 __all__ = ["Site", "EnergyCommunity", "Portfolio"]

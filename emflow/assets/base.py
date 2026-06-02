@@ -1,3 +1,3 @@
-from energydatamodel.base import EnergyAsset, TimeSeries, Sensor, EnergyCollection
+from energydatamodel import Asset, TimeSeries, Sensor, Collection
 
-__all__ = ["EnergyAsset", "TimeSeries", "Sensor", "EnergyCollection"]
+__all__ = ["Asset", "TimeSeries", "Sensor", "Collection"]

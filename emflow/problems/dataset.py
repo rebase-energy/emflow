@@ -8,7 +8,7 @@ import energydatamodel as edm
 class Dataset:
     name: str
     description: t.Optional[str] = None
-    collection: t.Optional[edm.EnergyCollection] = None
+    collection: t.Optional[edm.Collection] = None
     data: t.Optional[t.Dict[str, pd.DataFrame]] = None
 
     @property

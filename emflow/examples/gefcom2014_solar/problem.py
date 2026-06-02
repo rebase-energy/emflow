@@ -7,8 +7,6 @@ import gymnasium
 import gymnasium as gym
 import emflow as ef
 
-import matplotlib.pyplot as plt
-
 #df_data = pd.read_csv("gefcom2014-solar.csv",index_col=[0, 1], parse_dates=True, header=[0, 1])
 #df_scores = pd.read_csv("gefcom2014-solar-scores.csv", index_col=0)
 parent_dir = Path.cwd().parent
@@ -26,26 +24,26 @@ with importlib.resources.path("emflow.examples.data", "gefcom2014-solar-scores.c
 
 pvsystem_1 = ef.PVSystem(name="Site1",
                          capacity=1,
-                         longitude=145,
-                         latitude=-37.5,
+                         lon=145,
+                         lat=-37.5,
                          surface_azimuth=38,
                          surface_tilt=36)
 
 pvsystem_2 = ef.PVSystem(name="Site2",
                          capacity=1,
-                         longitude=145,
-                         latitude=-37.5,
+                         lon=145,
+                         lat=-37.5,
                          surface_azimuth=327,
                          surface_tilt=35)
 
 pvsystem_3 = ef.PVSystem(name="Site3",
                          capacity=1,
-                         longitude=145,
-                         latitude=-37.5,
+                         lon=145,
+                         lat=-37.5,
                          surface_azimuth=31,
                          surface_tilt=21)
 
-portfolio = ef.Portfolio(name="Portfolio", assets=[pvsystem_1, pvsystem_2, pvsystem_3])
+portfolio = ef.Portfolio(name="Portfolio", members=[pvsystem_1, pvsystem_2, pvsystem_3])
 
 dataset = ef.Dataset(name="gefcom2024-solar",
                      description="Data provided by the organisers of HEFTCom2024. Participants are free to use additional external data.",
@@ -58,12 +56,12 @@ state_space = ef.DataFrameSpace({asset.name: {
     'U100': gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32),
     'V100': gym.spaces.Box(low=-np.inf, high=np.inf, shape=(1,), dtype=np.float32),
     'Power': gym.spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
-} for asset in portfolio.assets})
+} for asset in portfolio.members})
 
 
 make_action_space = lambda n_quantiles: ef.DataFrameSpace({asset.name: {
     f"Quantile_forecast_{i+1}": gym.spaces.Box(low=0, high=1, shape=(1,)) for i in range(n_quantiles)
-} for asset in portfolio.assets})
+} for asset in portfolio.members})
 
 
 class GEFCom2014SolarEnv(gym.Env):
@@ -155,6 +153,7 @@ class GEFCom2014SolarEnv(gym.Env):
 
 
     def plot_overall_results(self, losses, drop_tasks=None, n_top_teams=None, xlim=None):
+        import matplotlib.pyplot as plt
         df_scores = self.scores
         df_scores = df_scores.assign(**losses)
         df_scores = df_scores.drop(index=drop_tasks)

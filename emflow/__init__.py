@@ -1,7 +1,4 @@
-from .assets.abstract import AbstractClass
-from .assets.geospatial import GeoLocation, Location, LineString, GeoPolygon, GeoMultiPolygon
-from .assets.base import EnergyAsset, TimeSeries, Sensor, EnergyCollection
-from .assets.timeseries import ElectricityDemand, ElectricityConsumption, ElectricityAreaDemand, ElectricityAreaConsumption, ElectricitySupply, ElectricityProduction, ElectricityAreaSupply, ElectricityAreaProduction, HeatingDemand, HeatingConsumption, HeatingAreaDemand
+from .assets.base import Asset, TimeSeries, Sensor, Collection
 from .assets.building import House
 from .assets.solar import FixedMount, SingleAxisTrackerMount, PVArray, PVSystem, SolarPowerArea
 from .assets.wind import WindTurbine, WindFarm, WindPowerArea

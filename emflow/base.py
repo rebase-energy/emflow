@@ -63,7 +63,7 @@ class BaseObjective:
 
 @dataclass
 class BaseProblem:
-    collection: edm.EnergyCollection
+    collection: edm.Collection
     state: BaseState
     action: BaseAction
     environment: BaseEnvironment

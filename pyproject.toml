@@ -4,16 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "emflow"
-version = "0.1.1"
+version = "0.2.0"
 authors = [
     { name = "rebase.energy" }
 ]
 description = "⚡ Open-source framework for sequential decision problems in the energy sector"
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
-    "energydatamodel==0.0.4",
+    "energydatamodel>=0.7.0,<0.8.0",
     "gymnasium>=1.1.1",
 ]
 
@@ -23,6 +23,10 @@ Repository = "https://github.com/rebase-energy/emflow"
 Documentation = "https://docs.emflow.org/en/latest"
 
 [project.optional-dependencies]
+examples = [
+    "matplotlib>=3.8",
+    "plotly>=5.0",
+]
 dev = [
     "build>=1.2.2",
     "ipykernel>=6.29.5",
