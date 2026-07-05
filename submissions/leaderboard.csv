@@ -4,3 +4,5 @@ submitted_at,submission,problem,split,objective,score,n_origins,n_scored,persist
 2026-07-05T19:14:53,20260705-171452-gefcom2014-v2/gefcom2014-price,gefcom2014:price,holdout,PinballLoss,4.838324,12,288,12.417222,True,7
 2026-07-05T19:21:07,20260705-171452-gefcom2014-v2/gefcom2014-solar,gefcom2014:solar,holdout,PinballLoss,0.012693,36,26280,0.180606,True,3
 2026-07-05T19:22:37,20260705-171452-gefcom2014-v2/gefcom2014-wind,gefcom2014:wind,holdout,PinballLoss,0.044218,120,87425,0.187575,True,6
+2026-07-05T20:34:36,20260705-203404-grid-demand-de-lu/grid-demand-de-lu,grid:demand-de-lu,holdout,MeanAbsoluteError,3943.706677,504,11820,6751.9049,True,
+2026-07-05T20:55:15,20260705-203512-grid-demand-de-lu/grid-demand-de-lu,grid:demand-de-lu,holdout,MeanAbsoluteError,2306.549021,504,11820,6751.9049,True,
