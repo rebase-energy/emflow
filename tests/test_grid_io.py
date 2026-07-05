@@ -54,12 +54,16 @@ class TestLoadSeries:
 class TestGridProblems:
     def test_variants_registered(self):
         import emflow as ef
+        from emflow.benchmarks.grid.zones import ZONE_REGISTRY
 
         names = [n for n in ef.list_problems() if n.startswith("grid:")]
-        assert names == sorted(
-            f"grid:{v}-{z}"
-            for v in grid_problem.TARGET_VARIABLES for z in grid_problem.ZONES
+        expected = sorted(
+            f"grid:{v}-{slug}"
+            for slug, entry in ZONE_REGISTRY.items() for v in entry["variables"]
         )
+        assert names == expected
+        assert "grid:demand-de-lu" in names  # pilot zones must stay qualified
+        assert "grid:solar-se-se4" in names
 
     def test_parse_variant(self):
         assert grid_problem.parse_variant("demand-de-lu") == ("demand", "DE-LU")
