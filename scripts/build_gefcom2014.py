@@ -385,12 +385,12 @@ def build(out_dir: Path) -> None:
                 print(f"  {f.relative_to(out_dir)}  {f.stat().st_size / 1e6:8.2f} MB")
 
 
-def upload(out_dir: Path, owner: str, token: str) -> None:
+def upload(out_dir: Path, owner: str, token: str, all_private: bool = False) -> None:
     from huggingface_hub import HfApi
 
     api = HfApi(token=token)
-    for sub, private in (("public", False), ("private", True)):
-        repo_id = f"{owner}/gefcom2014{'-private' if private else ''}"
+    for sub, private in (("public", all_private), ("private", True)):
+        repo_id = f"{owner}/gefcom2014{'-private' if sub == 'private' else ''}"
         print(f"uploading {out_dir / sub} -> {repo_id} (private={private}) ...")
         api.create_repo(repo_id, repo_type="dataset", private=private, exist_ok=True)
         api.upload_folder(folder_path=str(out_dir / sub), repo_id=repo_id,
@@ -404,6 +404,9 @@ def main() -> None:
     ap.add_argument("--out-dir", type=Path, default=CACHE / "build")
     ap.add_argument("--owner", default="rebase-energy")
     ap.add_argument("--upload", action="store_true")
+    ap.add_argument("--all-private", action="store_true",
+                    help="upload the public split as a private repo too "
+                         "(license caution; flip on the Hub later)")
     ap.add_argument("--token", default=None)
     args = ap.parse_args()
 
@@ -418,7 +421,7 @@ def main() -> None:
         token = args.token or os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HF_TOKEN")
         if not token:
             raise SystemExit("--upload needs an HF token")
-        upload(args.out_dir, args.owner, token)
+        upload(args.out_dir, args.owner, token, all_private=args.all_private)
 
 
 if __name__ == "__main__":
