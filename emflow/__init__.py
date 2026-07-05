@@ -46,9 +46,11 @@ from .run import (
     QuantileCalibration,
     Result,
     Verifier,
+    best_per_problem,
     default_analyzers,
     evaluate,
     load_submission,
+    sweep,
 )
 
 # Register the Hugging Face-backed ``rb://`` fsspec filesystem so
@@ -74,6 +76,7 @@ __all__ = [
     'Lag', 'Rolling', 'ForecastField', 'Calendar', 'materialize',
     # run
     'Experiment', 'Result', 'Verifier', 'evaluate', 'load_submission',
+    'sweep', 'best_per_problem',
     'Analyzer', 'PersistenceSkill', 'QuantileCalibration', 'default_analyzers',
     # io
     'RebaseFileSystem', 'RebaseIncompatibleError',
