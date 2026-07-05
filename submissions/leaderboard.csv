@@ -1,2 +1,6 @@
 submitted_at,submission,problem,split,objective,score,n_origins,n_scored,persistence_score,beats_persistence,rank
 2026-07-05T12:32:28,example_submission,swedish-temperatures:ar,holdout,MeanAbsoluteError,0.339776,672,672,0.387202,True,
+2026-07-05T19:11:03,20260705-171452-gefcom2014-v2/gefcom2014-load,gefcom2014:load,holdout,PinballLoss,7.954841,12,8760,18.261056,True,4
+2026-07-05T19:14:53,20260705-171452-gefcom2014-v2/gefcom2014-price,gefcom2014:price,holdout,PinballLoss,4.838324,12,288,12.417222,True,7
+2026-07-05T19:21:07,20260705-171452-gefcom2014-v2/gefcom2014-solar,gefcom2014:solar,holdout,PinballLoss,0.012693,36,26280,0.180606,True,3
+2026-07-05T19:22:37,20260705-171452-gefcom2014-v2/gefcom2014-wind,gefcom2014:wind,holdout,PinballLoss,0.044218,120,87425,0.187575,True,6
