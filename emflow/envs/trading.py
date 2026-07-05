@@ -40,7 +40,7 @@ class TradingEnv(ForecastEnv):
         self.prices_field = prices_field
         self.da_column = da_column
         self.ss_column = ss_column
-        prices_lag = self.portal.dataset.field(prices_field).settlement_lag
+        prices_lag = self.feed.dataset.field(prices_field).settlement_lag
         self._settle_lag = max(self._settle_lag, prices_lag)
 
     def _validate(self, action, origin: Origin) -> pd.DataFrame:
@@ -55,7 +55,7 @@ class TradingEnv(ForecastEnv):
         return action.reindex(origin.target_index)
 
     def _score(self, origin, prediction, actuals, asof) -> float:
-        prices = self.portal.actuals_between(
+        prices = self.feed.actuals_between(
             self.prices_field, origin.target_start, origin.target_end, asof=asof,
         ).reindex(origin.target_index)
         metric = self.objective.metric

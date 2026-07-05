@@ -24,8 +24,8 @@ class Analyzer(ABC):
     def name(self) -> str:
         return type(self).__name__
 
-    def setup(self, portal, target_field, target_column, objective) -> None:
-        self.portal = portal
+    def setup(self, feed, target_field, target_column, objective) -> None:
+        self.feed = feed
         self.target_field = target_field
         self.target_column = target_column
         self.objective = objective
@@ -48,8 +48,8 @@ class PersistenceSkill(Analyzer):
         self._weights: t.List[int] = []
         self._disabled = False
 
-    def setup(self, portal, target_field, target_column, objective) -> None:
-        super().setup(portal, target_field, target_column, objective)
+    def setup(self, feed, target_field, target_column, objective) -> None:
+        super().setup(feed, target_field, target_column, objective)
         # Env-settled objectives (trading revenue) can't score a synthetic
         # baseline from (actuals, prediction) alone — opt out cleanly.
         self._disabled = getattr(objective.metric, "settled_by_env", False)
@@ -57,8 +57,8 @@ class PersistenceSkill(Analyzer):
     def on_settlement(self, record) -> None:
         if self._disabled:
             return
-        hist = self.portal.history(record.origin.asof, self.target_field)
-        col = hist[self.target_column].dropna()
+        hist = self.feed.history(record.origin.asof, self.target_field)
+        col = hist[record.origin.column or self.target_column].dropna()
         if col.empty:
             return
         # Match the submission's output shape: for quantile predictions the

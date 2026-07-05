@@ -42,7 +42,7 @@ emflow: Open-source energy modelling framework
 
    data/field
    data/dataset
-   data/portal
+   data/feed
 
 .. _problems:
 

@@ -10,3 +10,7 @@ metric: MAPE
 notes: >
   Qualifying match of the BigDEAL 2018 competition: hourly load + temperature
   history; winning methods documented on the blog for reference scores.
+blocker: >
+  No public data release found (July 2026): the qualifying-match data was
+  distributed to registered participants by email. Ingestion requires
+  contacting the organizers (Dr. Tao Hong / BigDEAL lab).

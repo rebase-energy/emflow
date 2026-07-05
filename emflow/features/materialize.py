@@ -20,7 +20,7 @@ import typing as t
 import numpy as np
 import pandas as pd
 
-from ..data import DataPortal, TimeView
+from ..data import DataFeed, TimeView
 from .spec import Calendar, FeatureSpec, ForecastField, Lag, Rolling
 
 INDEX_NAMES = ("asof", "target_time")
@@ -53,7 +53,7 @@ def _align_forecast(fc: pd.DataFrame, col: str, targets: pd.DatetimeIndex,
 # -- batch path -------------------------------------------------------------------
 
 
-def materialize(portal: DataPortal, features: t.Sequence[FeatureSpec], origins) -> pd.DataFrame:
+def materialize(feed: DataFeed, features: t.Sequence[FeatureSpec], origins) -> pd.DataFrame:
     """Feature matrix for all ``origins``, indexed by ``(asof, target_time)``."""
     asofs, targets, origin_slices = [], [], []
     pos = 0
@@ -70,7 +70,7 @@ def materialize(portal: DataPortal, features: t.Sequence[FeatureSpec], origins) 
     cols: t.Dict[str, np.ndarray] = {}
     for spec in features:
         if isinstance(spec, Lag):
-            field = portal.dataset.field(spec.field)
+            field = feed.dataset.field(spec.field)
             series = _column(field.frame, spec.column, f"Lag({spec.field!r})")
             for name, lag in zip(spec.names(), spec.lags):
                 lag_td = pd.Timedelta(lag)
@@ -81,7 +81,7 @@ def materialize(portal: DataPortal, features: t.Sequence[FeatureSpec], origins) 
                 cols[name] = vals
 
         elif isinstance(spec, Rolling):
-            field = portal.dataset.field(spec.field)
+            field = feed.dataset.field(spec.field)
             series = _column(field.frame, spec.column, f"Rolling({spec.field!r})")
             rolled = series.rolling(spec.window).agg(spec.agg).dropna()
             cutoffs = asof_arr - field.availability_lag
@@ -94,7 +94,7 @@ def materialize(portal: DataPortal, features: t.Sequence[FeatureSpec], origins) 
         elif isinstance(spec, ForecastField):
             blocks = {name: np.full(len(index), np.nan) for name in spec.names()}
             for origin, sl in origin_slices:
-                fc = portal.forecasts(origin.asof, spec.field,
+                fc = feed.forecasts(origin.asof, spec.field,
                                       columns=list(spec.columns) or None)
                 if fc.empty:
                     continue
@@ -161,7 +161,7 @@ def materialize_observation(view: TimeView, features: t.Sequence[FeatureSpec],
     return pd.DataFrame(cols, index=index)
 
 
-def supervised_frame(portal: DataPortal, features: t.Sequence[FeatureSpec], origins,
+def supervised_frame(feed: DataFeed, features: t.Sequence[FeatureSpec], origins,
                      target_field: str, target_column=None):
     """``(X, y)`` for supervised training over *training-period* origins.
 
@@ -169,8 +169,8 @@ def supervised_frame(portal: DataPortal, features: t.Sequence[FeatureSpec], orig
     origins whose targets lie in the training split. Evaluation goes through
     the environment, which cannot leak.
     """
-    X = materialize(portal, features, origins)
-    field = portal.dataset.field(target_field)
+    X = materialize(feed, features, origins)
+    field = feed.dataset.field(target_field)
     series = _column(field.frame, target_column, f"target {target_field!r}")
     y = pd.Series(series.reindex(X.index.get_level_values("target_time")).to_numpy(),
                   index=X.index, name=series.name)

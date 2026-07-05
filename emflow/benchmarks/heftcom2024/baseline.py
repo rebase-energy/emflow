@@ -19,7 +19,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from emflow.data import DataPortal
+from emflow.data import DataFeed
 from emflow.features import ForecastField, Rolling
 from emflow.features.materialize import supervised_frame
 from emflow.models.predictor import FeaturePredictor
@@ -77,10 +77,10 @@ class BinnedQuantileBaseline(FeaturePredictor):
         origins = [o for o in self.problem.schedule.origins(None, train.asof)
                    if o.target_end < train.asof
                    and o.target_start >= train.asof - self.train_window]
-        portal = DataPortal(self.problem.load_dataset())
-        X, y_wind = supervised_frame(portal, self.features, origins,
+        feed = DataFeed(self.problem.load_dataset())
+        X, y_wind = supervised_frame(feed, self.features, origins,
                                      TARGET_FIELD, "wind_mwh_credit")
-        _, y_solar = supervised_frame(portal, self.features, origins,
+        _, y_solar = supervised_frame(feed, self.features, origins,
                                       TARGET_FIELD, "solar_mwh_credit")
         q = np.asarray(self.quantiles)
 

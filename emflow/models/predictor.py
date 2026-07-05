@@ -1,8 +1,8 @@
 """Predictor: the forecasting model contract.
 
-A predictor is fit on a training :class:`~emflow.data.portal.TimeView` and
+A predictor is fit on a training :class:`~emflow.data.feed.TimeView` and
 asked to forecast at :class:`~emflow.envs.forecast.Observation` s. Both are
-portal-served, so a predictor physically cannot see past the information set —
+feed-served, so a predictor physically cannot see past the information set —
 there is nothing else to look at.
 
 Contract

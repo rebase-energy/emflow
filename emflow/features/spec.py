@@ -2,7 +2,7 @@
 
 The most common *accidental* leak is feature engineering done on the full
 frame — lags and rolling means computed once over train+test. These specs are
-instead materialized through the portal's availability rules (see
+instead materialized through the feed's availability rules (see
 :mod:`emflow.features.materialize`): a lag that would reach past the origin's
 information set comes out NaN, never as a peeked value.
 

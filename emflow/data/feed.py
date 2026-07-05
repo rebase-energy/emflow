@@ -1,15 +1,15 @@
-"""DataPortal: the only object that hands out data during a run.
+"""DataFeed: the only object that hands out data during a run.
 
 Everything a model sees while being evaluated flows through here, bound to the
 simulation clock (*asof*). Availability rules live on the
-:class:`~emflow.data.field.Field`; the portal enforces them:
+:class:`~emflow.data.field.Field`; the feed enforces them:
 
 * actuals — values stamped ``t`` are served iff ``t + availability_lag <= asof``;
 * forecasts — runs issued at ``i`` are served iff ``i + availability_lag <= asof``,
   and per valid_time the **latest** such run wins;
 * statics — always served.
 
-With the portal as the sole gate, look-ahead leakage is impossible by
+With the feed as the sole gate, look-ahead leakage is impossible by
 construction rather than by runner discipline.
 """
 
@@ -23,7 +23,7 @@ from .dataset import Dataset
 from .field import Field, ISSUE_LEVEL, VALID_LEVEL
 
 
-class DataPortal:
+class DataFeed:
     """Point-in-time access to a :class:`Dataset`."""
 
     def __init__(self, dataset: Dataset):
@@ -126,7 +126,7 @@ class DataPortal:
     # -- views ------------------------------------------------------------------
 
     def view(self, asof, strict=False) -> "TimeView":
-        """A portal bound to a fixed clock time (what observations wrap).
+        """A feed bound to a fixed clock time (what observations wrap).
 
         ``strict=True`` makes the boundary exclusive — used for training views.
         """
@@ -142,30 +142,30 @@ class DataPortal:
 
 
 class TimeView:
-    """A :class:`DataPortal` frozen at one clock time.
+    """A :class:`DataFeed` frozen at one clock time.
 
     This is the whole world a model gets to see: observations and training
     views are ``TimeView`` s. There is deliberately no way to reach the
     underlying dataset or move the clock from here.
     """
 
-    def __init__(self, portal: DataPortal, asof, strict=False):
-        self._portal = portal
+    def __init__(self, feed: DataFeed, asof, strict=False):
+        self._feed = feed
         self.asof = pd.Timestamp(asof)
         self.strict = strict
 
     def history(self, name: str, window=None) -> pd.DataFrame:
-        return self._portal.history(self.asof, name, window=window, strict=self.strict)
+        return self._feed.history(self.asof, name, window=window, strict=self.strict)
 
     def forecasts(self, name: str, columns=None) -> pd.DataFrame:
-        return self._portal.forecasts(self.asof, name, columns=columns)
+        return self._feed.forecasts(self.asof, name, columns=columns)
 
     def static(self, name: str) -> pd.DataFrame:
-        return self._portal.static(name)
+        return self._feed.static(name)
 
     @property
     def fields(self):
-        return sorted(self._portal.dataset.fields)
+        return sorted(self._feed.dataset.fields)
 
     def __repr__(self):
         return f"TimeView(asof={self.asof}, fields={self.fields})"

@@ -2,7 +2,7 @@
 
 A :class:`Field` is one logical series of a dataset plus the rule for *when each
 value becomes knowable*. This is the primitive that makes look-ahead leakage
-impossible by construction: the :class:`~emflow.data.portal.DataPortal` only ever
+impossible by construction: the :class:`~emflow.data.feed.DataFeed` only ever
 serves values whose availability time is at or before the simulation clock.
 
 Three kinds of field:
@@ -14,14 +14,14 @@ Three kinds of field:
       ``t + availability_lag`` — the right model for settled-only archives;
     * **bitemporal** (``knowledge_col=...``): each row carries its own
       knowledge timestamp, and the same measurement time may appear multiple
-      times with successive revisions (preliminary → settled). The portal
+      times with successive revisions (preliminary → settled). The feed
       serves, at any clock time, the latest revision already knowable — so a
       backtest sees the preliminary value exactly as a live participant did.
 
 ``forecast``
     Predictions stamped by *(issue_time, valid_time)* — e.g. NWP runs. The run
     issued at ``issue_time`` becomes knowable at ``issue_time +
-    availability_lag`` (dissemination delay). At any clock time the portal
+    availability_lag`` (dissemination delay). At any clock time the feed
     serves, per valid_time, the latest run already issued. Using tomorrow's
     weather *actuals* as if they were forecasts is the classic energy-backtest
     leak; this kind exists to make that mistake unrepresentable.

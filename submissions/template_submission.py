@@ -3,7 +3,7 @@
 The verifier will call ``get_model()`` to obtain a FRESH, UNTRAINED predictor, then:
   1. fit it on the official training view       (model.fit(train)),
   2. score it origin-by-origin on the held-out split, where every observation
-     is served through emflow's point-in-time DataPortal.
+     is served through emflow's point-in-time DataFeed.
 
 You never receive the holdout targets, and your model is trained by the
 verifier — so the score cannot be inflated by data leakage.

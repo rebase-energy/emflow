@@ -101,7 +101,7 @@ class TestActionValidation:
     def test_quantile_contract_enforced(self, toy_problem):
         problem = toy_problem
         env = ForecastEnv(
-            portal=problem.env("validation").portal,
+            feed=problem.env("validation").feed,
             origins=problem.origins("validation"),
             target_field="power",
             objective=problem.objective,

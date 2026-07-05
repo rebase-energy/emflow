@@ -2,7 +2,7 @@
 
 The evaluation loop itself is the ordinary :class:`~emflow.run.experiment.Experiment`
 — leakage protection lives in the data layer (every observation is a
-portal-served view), not in a special runner. What the Verifier adds is
+feed-served view), not in a special runner. What the Verifier adds is
 submission hygiene for *untrusted* models:
 
 * the submitter provides a **fresh, untrained** :class:`~emflow.models.predictor.Predictor`
@@ -17,7 +17,7 @@ submission hygiene for *untrusted* models:
   placed in the original competition.
 
 Honest scope note: for problems whose full dataset ships locally (the tutorial
-problems), a determined adversary can read the raw files outside the portal —
+problems), a determined adversary can read the raw files outside the feed —
 local verification protects against *accidental* leakage. The trustworthy
 setup for agent benchmarking keeps holdout labels in a private ``rb://`` repo
 that only the verifier's token can read, and runs submissions with no network.
@@ -135,7 +135,7 @@ class Verifier:
         if metadata:
             for key in sorted(metadata):
                 print(f"{key:<11}: {metadata[key]}")
-        print(f"Leakage    : impossible by construction (portal-served observations)")
+        print(f"Leakage    : impossible by construction (feed-served observations)")
         print(f"{'=' * 64}\n")
 
     def _append_leaderboard(self, r: Result, metadata: t.Optional[dict] = None) -> None:

@@ -11,12 +11,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from emflow.data import DataPortal, Dataset, Field
+from emflow.data import DataFeed, Dataset, Field
 from emflow.data.field import ISSUE_LEVEL
 from emflow.features import Calendar, ForecastField, Lag, Rolling, materialize
 
 from conftest import make_toy_problem
-from test_portal import bitemporal_field
+from test_feed import bitemporal_field
 
 FEATURES = [
     Lag("power", ["1h", "2h", "24h"]),
@@ -61,9 +61,9 @@ def sample_origins(problem, k=6):
 
 class TestPortalInvariance:
     def test_history_and_forecasts(self, problem):
-        full = DataPortal(problem.load_dataset())
+        full = DataFeed(problem.load_dataset())
         for origin in sample_origins(problem):
-            trunc = DataPortal(truncate_dataset(problem.load_dataset(), origin.asof))
+            trunc = DataFeed(truncate_dataset(problem.load_dataset(), origin.asof))
             pd.testing.assert_frame_equal(
                 full.history(origin.asof, "power"),
                 trunc.history(origin.asof, "power"))
@@ -73,18 +73,18 @@ class TestPortalInvariance:
 
     def test_bitemporal_history(self):
         dataset = Dataset(name="d", fields={"power": bitemporal_field()})
-        full = DataPortal(dataset)
+        full = DataFeed(dataset)
         for asof in pd.date_range("2025-01-01 06:00", "2025-01-04", freq="11h", tz="UTC"):
-            trunc = DataPortal(truncate_dataset(dataset, asof))
+            trunc = DataFeed(truncate_dataset(dataset, asof))
             pd.testing.assert_frame_equal(full.history(asof, "power"),
                                           trunc.history(asof, "power"))
 
 
 class TestMaterializerInvariance:
     def test_all_spec_types(self, problem):
-        full = DataPortal(problem.load_dataset())
+        full = DataFeed(problem.load_dataset())
         for origin in sample_origins(problem):
-            trunc = DataPortal(truncate_dataset(problem.load_dataset(), origin.asof))
+            trunc = DataFeed(truncate_dataset(problem.load_dataset(), origin.asof))
             pd.testing.assert_frame_equal(
                 materialize(full, FEATURES, [origin]),
                 materialize(trunc, FEATURES, [origin]))
@@ -100,9 +100,9 @@ class TestEndToEndInvariance:
         _, info = env.reset()
         model.fit(info["train"])
 
-        full = DataPortal(problem.load_dataset())
+        full = DataFeed(problem.load_dataset())
         for origin in sample_origins(problem, k=3):
-            trunc = DataPortal(truncate_dataset(problem.load_dataset(), origin.asof))
+            trunc = DataFeed(truncate_dataset(problem.load_dataset(), origin.asof))
             pred_full = model.predict_tabular(materialize(full, model.features, [origin]))
             pred_trunc = model.predict_tabular(materialize(trunc, model.features, [origin]))
             pd.testing.assert_frame_equal(pred_full, pred_trunc)
@@ -114,8 +114,8 @@ class TestStrictBoundary:
         dataset truncated one instant before train_end — guards the boundary
         fix where the value stamped exactly train_end is a scored target."""
         cutoff = problem.splits.train_end
-        full = DataPortal(problem.load_dataset())
-        trunc = DataPortal(truncate_dataset(problem.load_dataset(),
+        full = DataFeed(problem.load_dataset())
+        trunc = DataFeed(truncate_dataset(problem.load_dataset(),
                                             cutoff - pd.Timedelta("1ns")))
         pd.testing.assert_frame_equal(
             full.history(cutoff, "power", strict=True),

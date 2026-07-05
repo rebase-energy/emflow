@@ -1,10 +1,10 @@
-"""The leak-proof guarantee: the portal never serves anything not knowable at asof."""
+"""The leak-proof guarantee: the feed never serves anything not knowable at asof."""
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from emflow.data import DataPortal, Dataset, Field
+from emflow.data import DataFeed, Dataset, Field
 
 
 def hourly_index(start, periods):
@@ -38,47 +38,47 @@ def dataset():
 
 class TestHistory:
     def test_availability_lag_hides_recent_values(self, dataset):
-        portal = DataPortal(dataset)
+        feed = DataFeed(dataset)
         asof = pd.Timestamp("2025-01-02 00:00", tz="UTC")
-        hist = portal.history(asof, "power")
+        hist = feed.history(asof, "power")
         # lag 1h: value stamped 23:00 is knowable at 00:00, value at 00:00 is not
         assert hist.index.max() == pd.Timestamp("2025-01-01 23:00", tz="UTC")
 
     def test_nothing_after_asof_property(self, dataset):
-        portal = DataPortal(dataset)
+        feed = DataFeed(dataset)
         for asof in hourly_index("2025-01-01", 100)[::7]:
-            hist = portal.history(asof, "power")
+            hist = feed.history(asof, "power")
             assert (hist.index + dataset.field("power").availability_lag <= asof).all()
 
     def test_window_is_efficiency_only(self, dataset):
-        portal = DataPortal(dataset)
+        feed = DataFeed(dataset)
         asof = pd.Timestamp("2025-01-03 00:00", tz="UTC")
-        full = portal.history(asof, "power")
-        windowed = portal.history(asof, "power", window="24h")
+        full = feed.history(asof, "power")
+        windowed = feed.history(asof, "power", window="24h")
         assert windowed.index.max() == full.index.max()  # same cutoff
         assert len(windowed) <= 25
 
     def test_kind_mismatch_raises(self, dataset):
-        portal = DataPortal(dataset)
+        feed = DataFeed(dataset)
         with pytest.raises(ValueError, match="not an actual field"):
-            portal.history("2025-01-02", "nwp")
+            feed.history("2025-01-02", "nwp")
 
 
 class TestForecasts:
     def test_only_disseminated_runs_served(self, dataset):
-        portal = DataPortal(dataset)
+        feed = DataFeed(dataset)
         # At 05:00 on Jan 1 the 00:00 run (available 06:00) is NOT out yet.
-        fc = portal.forecasts(pd.Timestamp("2025-01-01 05:00", tz="UTC"), "nwp")
+        fc = feed.forecasts(pd.Timestamp("2025-01-01 05:00", tz="UTC"), "nwp")
         assert fc.empty
         # At 06:00 it is.
-        fc = portal.forecasts(pd.Timestamp("2025-01-01 06:00", tz="UTC"), "nwp")
+        fc = feed.forecasts(pd.Timestamp("2025-01-01 06:00", tz="UTC"), "nwp")
         assert not fc.empty
         assert (fc["issue_time"] == pd.Timestamp("2025-01-01 00:00", tz="UTC")).all()
 
     def test_latest_run_wins_per_valid_time(self, dataset):
-        portal = DataPortal(dataset)
+        feed = DataFeed(dataset)
         asof = pd.Timestamp("2025-01-02 00:00", tz="UTC")  # 00:00 + 12:00 Jan1 runs out
-        fc = portal.forecasts(asof, "nwp")
+        fc = feed.forecasts(asof, "nwp")
         overlap = pd.Timestamp("2025-01-02 06:00", tz="UTC")  # covered by both runs
         row = fc.loc[overlap]
         assert row["issue_time"] == pd.Timestamp("2025-01-01 12:00", tz="UTC")
@@ -86,34 +86,34 @@ class TestForecasts:
         assert row["wind_speed"] == 18.0
 
     def test_never_serves_future_issues(self, dataset):
-        portal = DataPortal(dataset)
+        feed = DataFeed(dataset)
         lag = dataset.field("nwp").availability_lag
         for asof in pd.date_range("2025-01-01", periods=20, freq="7h", tz="UTC"):
-            fc = portal.forecasts(asof, "nwp")
+            fc = feed.forecasts(asof, "nwp")
             if not fc.empty:
                 assert (fc["issue_time"] + lag <= asof).all()
 
 
 class TestSettlement:
     def test_actuals_between_respects_availability(self, dataset):
-        portal = DataPortal(dataset)
+        feed = DataFeed(dataset)
         start, end = "2025-01-01 20:00", "2025-01-02 04:00"
         asof = pd.Timestamp("2025-01-02 00:00", tz="UTC")
-        got = portal.actuals_between("power", start, end, asof=asof)
+        got = feed.actuals_between("power", start, end, asof=asof)
         assert got.index.max() == pd.Timestamp("2025-01-01 23:00", tz="UTC")
         # Later, the full window settles.
-        later = portal.actuals_between("power", start, end,
+        later = feed.actuals_between("power", start, end,
                                        asof=pd.Timestamp("2025-01-02 06:00", tz="UTC"))
         assert later.index.max() == pd.Timestamp("2025-01-02 04:00", tz="UTC")
 
 
 class TestTimeView:
     def test_view_is_frozen_and_consistent(self, dataset):
-        portal = DataPortal(dataset)
+        feed = DataFeed(dataset)
         asof = pd.Timestamp("2025-01-02 00:00", tz="UTC")
-        view = portal.view(asof)
-        pd.testing.assert_frame_equal(view.history("power"), portal.history(asof, "power"))
-        pd.testing.assert_frame_equal(view.forecasts("nwp"), portal.forecasts(asof, "nwp"))
+        view = feed.view(asof)
+        pd.testing.assert_frame_equal(view.history("power"), feed.history(asof, "power"))
+        pd.testing.assert_frame_equal(view.forecasts("nwp"), feed.forecasts(asof, "nwp"))
         assert view.static("meta")["capacity"].iloc[0] == 10.0
 
 
@@ -135,20 +135,20 @@ def bitemporal_field():
 
 class TestBitemporal:
     def test_preliminary_then_settled(self):
-        portal = DataPortal(Dataset(name="d", fields={"power": bitemporal_field()}))
+        feed = DataFeed(Dataset(name="d", fields={"power": bitemporal_field()}))
         t0 = pd.Timestamp("2025-01-01 00:00", tz="UTC")
         # 1h after measurement: preliminary value visible
-        early = portal.history(t0 + pd.Timedelta("1h"), "power")
+        early = feed.history(t0 + pd.Timedelta("1h"), "power")
         assert early.loc[t0, "power"] == 0.0
         # 49h after: the revision has landed and wins
-        late = portal.history(t0 + pd.Timedelta("49h"), "power")
+        late = feed.history(t0 + pd.Timedelta("49h"), "power")
         assert late.loc[t0, "power"] == 100.0
 
     def test_knowledge_axis_never_leaks(self):
         field = bitemporal_field()
-        portal = DataPortal(Dataset(name="d", fields={"power": field}))
+        feed = DataFeed(Dataset(name="d", fields={"power": field}))
         for asof in hourly_index("2025-01-01", 72)[::7]:
-            hist = portal.history(asof, "power")
+            hist = feed.history(asof, "power")
             # every served value must have been knowable: reconstruct its
             # knowledge time from the raw frame and check
             raw = field.frame
@@ -157,15 +157,15 @@ class TestBitemporal:
                 assert (candidates["knowledge_time"] <= asof).all()
 
     def test_knowledge_column_dropped_from_output(self):
-        portal = DataPortal(Dataset(name="d", fields={"power": bitemporal_field()}))
-        hist = portal.history("2025-01-02", "power")
+        feed = DataFeed(Dataset(name="d", fields={"power": bitemporal_field()}))
+        hist = feed.history("2025-01-02", "power")
         assert list(hist.columns) == ["power"]
 
     def test_strict_excludes_knowledge_instant(self):
-        portal = DataPortal(Dataset(name="d", fields={"power": bitemporal_field()}))
+        feed = DataFeed(Dataset(name="d", fields={"power": bitemporal_field()}))
         t0 = pd.Timestamp("2025-01-01 00:30", tz="UTC")  # first prelim knowledge time
-        assert portal.history(t0, "power", strict=True).empty
-        assert not portal.history(t0, "power", strict=False).empty
+        assert feed.history(t0, "power", strict=True).empty
+        assert not feed.history(t0, "power", strict=False).empty
 
     def test_settlement_lag_is_max_revision_delay(self):
         assert bitemporal_field().settlement_lag == pd.Timedelta("48h")

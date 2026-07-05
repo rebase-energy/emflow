@@ -11,3 +11,8 @@ notes: >
   78 teams / 121 contestants. The one competition in the roster whose metric
   is about *when*, not *how much* — PeakTimingError is already implemented
   and tested in emflow.problems.metrics.
+blocker: >
+  The data ships as supplementary material of the IET Smart Grid paper
+  (doi 10.1049/stg2.12162), behind Wiley/IET authentication (July 2026).
+  Ingestion requires downloading the supplement manually with institutional
+  or publisher access and pointing the build script at it.

@@ -48,7 +48,7 @@ class Experiment:
         obs, info = env.reset()
 
         for analyzer in self.analyzers:
-            analyzer.setup(env.portal, env.target_field, env.target_column, env.objective)
+            analyzer.setup(env.feed, env.target_field, env.target_column, env.objective)
 
         if hasattr(self.model, "bind"):
             self.model.bind(self.problem)
@@ -85,7 +85,7 @@ class Experiment:
                 f"model {self.model.name!r} does not support batch prediction; "
                 f"use mode='event'"
             )
-        X = materialize(env.portal, self.model.features, env.origins)
+        X = materialize(env.feed, self.model.features, env.origins)
         out = self.model.predict_tabular(X)
         if not isinstance(out.index, pd.MultiIndex):
             raise TypeError(

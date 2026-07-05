@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from emflow.data import DataPortal, Dataset, Field
+from emflow.data import DataFeed, Dataset, Field
 from emflow.envs import ForecastEnv
 from emflow.problems import IssueSchedule, MeanAbsoluteError, Objective, Problem, Splits
 
@@ -45,7 +45,7 @@ def make_toy_problem(schedule=None) -> Problem:
 
     def make_env(problem, split):
         return ForecastEnv(
-            portal=DataPortal(problem.load_dataset()),
+            feed=DataFeed(problem.load_dataset()),
             origins=problem.origins(split),
             target_field="power",
             objective=problem.objective,

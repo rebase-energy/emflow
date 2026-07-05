@@ -32,7 +32,7 @@ from pathlib import Path
 import pandas as pd
 
 import emflow as ef
-from emflow.data import DataPortal
+from emflow.data import DataFeed
 from emflow.envs import ForecastEnv, TradingEnv
 from emflow.problems.metrics import TradingRevenue
 from emflow.problems.schedule import Origin
@@ -153,7 +153,7 @@ def reference_scores(track: str = "forecasting"):
 
 def make_env(problem: ef.Problem, split: str) -> ForecastEnv:
     return ForecastEnv(
-        portal=DataPortal(problem.load_dataset()),
+        feed=DataFeed(problem.load_dataset()),
         origins=problem.origins(split),
         target_field=TARGET_FIELD,
         objective=problem.objective,
@@ -165,7 +165,7 @@ def make_env(problem: ef.Problem, split: str) -> ForecastEnv:
 
 def make_trading_env(problem: ef.Problem, split: str) -> TradingEnv:
     return TradingEnv(
-        portal=DataPortal(problem.load_dataset()),
+        feed=DataFeed(problem.load_dataset()),
         origins=problem.origins(split),
         target_field=TARGET_FIELD,
         objective=problem.objective,

@@ -2,7 +2,7 @@
 
 The action *is* the forecast: a DataFrame indexed by the current origin's
 target times, with a ``"point"`` column or quantile-level float columns. The
-observation is a :class:`Observation` — a :class:`~emflow.data.portal.TimeView`
+observation is a :class:`Observation` — a :class:`~emflow.data.feed.TimeView`
 frozen at the origin's ``asof`` plus the target index to forecast. The model
 never touches the dataset; the observation is its whole world.
 
@@ -23,7 +23,7 @@ import typing as t
 import gymnasium as gym
 import pandas as pd
 
-from ..data import DataPortal, TimeView
+from ..data import DataFeed, TimeView
 from ..data.field import Field
 from ..problems.metrics import POINT_COL, quantile_columns
 from ..problems.objective import Objective
@@ -32,11 +32,14 @@ from ..problems.schedule import Origin
 
 class Observation(TimeView):
     """What a model sees at one forecast origin: point-in-time data access
-    (via :class:`TimeView`) plus the target index it must forecast."""
+    (via :class:`TimeView`) plus the target index it must forecast.
+    ``column`` names the target-field column this origin is scoped to
+    (multi-zone problems); None means the env's default."""
 
-    def __init__(self, portal: DataPortal, origin: Origin):
-        super().__init__(portal, origin.asof)
+    def __init__(self, feed: DataFeed, origin: Origin):
+        super().__init__(feed, origin.asof)
         self.target_index = origin.target_index
+        self.column = origin.column
 
     def __repr__(self):
         return (f"Observation(asof={self.asof}, targets={self.target_index[0]} → "
@@ -58,7 +61,7 @@ class ForecastEnv(gym.Env):
 
     Parameters
     ----------
-    portal:
+    feed:
         The point-in-time data gate.
     origins:
         The origins to step through (from ``problem.origins(split)``).
@@ -78,27 +81,28 @@ class ForecastEnv(gym.Env):
 
     metadata = {"render_modes": []}
 
-    def __init__(self, portal: DataPortal, origins: t.Sequence[Origin],
+    def __init__(self, feed: DataFeed, origins: t.Sequence[Origin],
                  target_field: str, objective: Objective, *,
                  target_column=None, train_end=None,
                  quantiles: t.Optional[t.Sequence[float]] = None):
         if not origins:
             raise ValueError("ForecastEnv needs at least one origin")
-        self.portal = portal
+        self.feed = feed
         self.origins = list(origins)
         self.target_field = target_field
         self.objective = objective
         self.quantiles = [float(q) for q in quantiles] if quantiles is not None else None
         self.train_end = pd.Timestamp(train_end) if train_end is not None else None
 
-        field = portal.dataset.field(target_field)
-        if target_column is None:
-            if field.frame.shape[1] != 1:
+        field = feed.dataset.field(target_field)
+        if target_column is None and not all(o.column for o in origins):
+            value_cols = [c for c in field.frame.columns if c != field.knowledge_col]
+            if len(value_cols) != 1:
                 raise ValueError(
-                    f"target field {target_field!r} has columns "
-                    f"{list(field.frame.columns)}; pass target_column"
+                    f"target field {target_field!r} has columns {value_cols}; "
+                    f"pass target_column or give every origin a column"
                 )
-            target_column = field.frame.columns[0]
+            target_column = value_cols[0]
         self.target_column = target_column
         self._target_lag = field.settlement_lag
         # Everything a settlement needs must be knowable: subclasses that pull
@@ -118,8 +122,8 @@ class ForecastEnv(gym.Env):
         if self.train_end is not None:
             # Strict boundary: a value stamped exactly train_end is a scored
             # target of the first evaluation origin, never training data.
-            info["train"] = self.portal.view(self.train_end, strict=True)
-        return Observation(self.portal, self.origins[0]), info
+            info["train"] = self.feed.view(self.train_end, strict=True)
+        return Observation(self.feed, self.origins[0]), info
 
     def step(self, action):
         origin = self.origins[self._i]
@@ -135,7 +139,7 @@ class ForecastEnv(gym.Env):
             obs = None
         else:
             settle_asof = self.origins[self._i].asof
-            obs = Observation(self.portal, self.origins[self._i])
+            obs = Observation(self.feed, self.origins[self._i])
 
         settled = self._settle(settle_asof)
         reward = sum(-r.score if self.objective.lower_is_better else r.score
@@ -181,10 +185,10 @@ class ForecastEnv(gym.Env):
         settled, still_pending = [], []
         for origin, prediction in self._pending:
             if origin.target_end + self._settle_lag <= asof:
-                actuals = self.portal.actuals_between(
+                actuals = self.feed.actuals_between(
                     self.target_field, origin.target_start, origin.target_end,
                     asof=asof,
-                )[self.target_column].reindex(origin.target_index)
+                )[origin.column or self.target_column].reindex(origin.target_index)
                 score = self._score(origin, prediction, actuals, asof)
                 settled.append(SettlementRecord(origin, prediction, actuals, score))
             else:
@@ -195,5 +199,5 @@ class ForecastEnv(gym.Env):
     def _score(self, origin: Origin, prediction: pd.DataFrame,
                actuals: pd.Series, asof) -> float:
         """Score one settled origin. Subclasses may use market state at
-        ``asof`` (always availability-checked through the portal)."""
+        ``asof`` (always availability-checked through the feed)."""
         return self.objective.calculate(actuals, prediction)

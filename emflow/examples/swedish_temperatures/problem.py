@@ -11,7 +11,7 @@ import importlib.resources
 import pandas as pd
 
 import emflow as ef
-from emflow.data import DataPortal
+from emflow.data import DataFeed
 from emflow.envs import ForecastEnv
 
 STATION_ID = "98230"
@@ -55,7 +55,7 @@ def load_dataset() -> ef.Dataset:
 
 def make_env(problem: ef.Problem, split: str) -> ForecastEnv:
     return ForecastEnv(
-        portal=DataPortal(problem.load_dataset()),
+        feed=DataFeed(problem.load_dataset()),
         origins=problem.origins(split),
         target_field="temperature",
         objective=problem.objective,

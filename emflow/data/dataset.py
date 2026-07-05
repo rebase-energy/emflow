@@ -36,7 +36,7 @@ class Dataset:
     ``fields`` maps name -> :class:`Field`. The legacy ``data`` dict-of-frames
     view is kept as a convenience (``dataset.data["wind_power"]`` returns the
     raw frame), but evaluation code must go through a
-    :class:`~emflow.data.portal.DataPortal`, never through ``data``.
+    :class:`~emflow.data.feed.DataFeed`, never through ``data``.
     """
 
     name: str

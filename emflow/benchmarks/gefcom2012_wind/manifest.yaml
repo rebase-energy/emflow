@@ -11,3 +11,8 @@ notes: >
   Wind power (normalized) for 7 farms with (u, v) NWP at two heights as
   forecast fields — maps directly onto Field(kind="forecast") with
   (issue_time, valid_time).
+blocker: >
+  Kaggle API returns 403 until the account (token in ../agent-work/.env) has
+  accepted this competition's rules in the browser:
+  https://www.kaggle.com/competitions/GEF2012-wind-forecasting/rules
+  After accepting, run scripts/build_gefcom2012.py.

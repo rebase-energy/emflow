@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from emflow.data import DataPortal
+from emflow.data import DataFeed
 from emflow.features import Calendar, ForecastField, Lag, Rolling, materialize
 from emflow.features.materialize import materialize_observation, supervised_frame
 from emflow.models.predictor import FeaturePredictor
@@ -32,8 +32,8 @@ class LinearFeatureModel(FeaturePredictor):
             train.history("power").index[200],  # skip warm-up so lags resolve
             train.asof,
         )
-        portal = DataPortal(problem.load_dataset())
-        X, y = supervised_frame(portal, self.features, origins, "power")
+        feed = DataFeed(problem.load_dataset())
+        X, y = supervised_frame(feed, self.features, origins, "power")
         mask = np.isfinite(X.to_numpy()).all(axis=1) & np.isfinite(y.to_numpy())
         A = np.column_stack([np.ones(mask.sum()), X.to_numpy()[mask]])
         self.beta, *_ = np.linalg.lstsq(A, y.to_numpy()[mask], rcond=None)
@@ -55,11 +55,11 @@ def fitted_setup():
 
 class TestMaterializeEquivalence:
     def test_single_origin_matches_batch_rows(self, toy_problem):
-        portal = DataPortal(toy_problem.load_dataset())
+        feed = DataFeed(toy_problem.load_dataset())
         origins = toy_problem.origins("validation")[:50]
-        batch = materialize(portal, FEATURES, origins)
+        batch = materialize(feed, FEATURES, origins)
         for origin in origins[::7]:
-            single = materialize_observation(portal.view(origin.asof), FEATURES,
+            single = materialize_observation(feed.view(origin.asof), FEATURES,
                                              origin.target_index)
             batch_rows = batch.loc[[origin.asof]]
             pd.testing.assert_frame_equal(single, batch_rows, check_exact=False)
@@ -67,9 +67,9 @@ class TestMaterializeEquivalence:
     def test_lag_masked_when_not_knowable(self, toy_problem):
         """A 30-minute lag on a field with 1h availability can never be known
         at the origin — every row must be NaN, not a peeked value."""
-        portal = DataPortal(toy_problem.load_dataset())
+        feed = DataFeed(toy_problem.load_dataset())
         origins = toy_problem.origins("validation")[:10]
-        X = materialize(portal, [Lag("power", ["30min"])], origins)
+        X = materialize(feed, [Lag("power", ["30min"])], origins)
         assert X["power_lag_30min"].isna().all()
 
 

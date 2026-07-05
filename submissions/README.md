@@ -10,7 +10,7 @@ leakage**.
   (or a module-level `model = ...` instance) returning a *fresh, untrained* model.
 - The verifier **fits your model itself** on the official training view, then
   scores it origin-by-origin on the **holdout split**. Every observation your
-  model sees is served through emflow's point-in-time `DataPortal`: at each
+  model sees is served through emflow's point-in-time `DataFeed`: at each
   forecast origin it contains only what was knowable at that moment — the
   targets are structurally absent, so the reported score is trustworthy.
 

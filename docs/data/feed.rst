@@ -1,7 +1,7 @@
-DataPortal
+DataFeed
 ==========
 
-.. automodule:: emflow.data.portal
+.. automodule:: emflow.data.feed
    :members:
    :undoc-members:
    :show-inheritance:

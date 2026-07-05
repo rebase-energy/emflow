@@ -11,3 +11,8 @@ notes: >
   4.5 years of hourly loads for 20 US utility zones with 11 temperature
   stations. Needs the PeakTiming-style hierarchical aggregate scoring (zone
   weights) and an explicit schedule for the 8 in-sample backcast weeks.
+blocker: >
+  Kaggle API returns 403 until the account (token in ../agent-work/.env) has
+  accepted this competition's rules in the browser:
+  https://www.kaggle.com/competitions/global-energy-forecasting-competition-2012-load-forecasting/rules
+  After accepting, run scripts/build_gefcom2012.py.

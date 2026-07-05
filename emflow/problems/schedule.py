@@ -17,10 +17,15 @@ import pandas as pd
 
 @dataclass(frozen=True)
 class Origin:
-    """One forecast issue: act at ``asof``, forecast ``target_index``."""
+    """One forecast issue: act at ``asof``, forecast ``target_index``.
+
+    ``column`` scopes the origin to one column of the target field —
+    multi-zone competitions (GEFCom2014 wind's 10 zones) score each zone
+    separately, so each (task, zone) pair is its own origin."""
 
     asof: pd.Timestamp
     target_index: pd.DatetimeIndex
+    column: t.Optional[str] = None
 
     @property
     def target_start(self) -> pd.Timestamp:

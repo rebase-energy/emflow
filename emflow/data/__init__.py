@@ -1,5 +1,5 @@
 from .field import Field
 from .dataset import Dataset
-from .portal import DataPortal, TimeView
+from .feed import DataFeed, TimeView
 
-__all__ = ["Field", "Dataset", "DataPortal", "TimeView"]
+__all__ = ["Field", "Dataset", "DataFeed", "TimeView"]

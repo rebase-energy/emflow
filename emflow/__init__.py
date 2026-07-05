@@ -8,7 +8,7 @@ from .assets.energycollection import Site, EnergyCommunity, Portfolio
 
 from .spaces.dataframe import DataFrameSpace
 
-from .data import Dataset, DataPortal, Field, TimeView
+from .data import Dataset, DataFeed, Field, TimeView
 
 from .models.agent import Agent
 from .models.optimizer import Optimizer
@@ -56,7 +56,7 @@ _register_rb()
 
 __all__ = [
     # data
-    'Dataset', 'Field', 'DataPortal', 'TimeView',
+    'Dataset', 'Field', 'DataFeed', 'TimeView',
     # problems
     'Problem', 'Splits', 'RefScore', 'Objective', 'IssueSchedule', 'Origin',
     'Metric', 'MeanAbsoluteError', 'MeanSquaredError', 'RootMeanSquaredError',

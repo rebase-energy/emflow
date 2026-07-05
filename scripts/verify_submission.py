@@ -14,7 +14,7 @@ Usage:
 The submission file must expose ``get_model() -> emflow.Predictor`` returning a
 *fresh, untrained* predictor (or a module-level ``model = ...`` instance). The
 verifier fits it on the official training view and scores it on the holdout
-split, where every observation is served through the point-in-time DataPortal —
+split, where every observation is served through the point-in-time DataFeed —
 so the reported number cannot be inflated by data leakage.
 
 SECURITY: this imports and executes the submission file (local or downloaded). Only
