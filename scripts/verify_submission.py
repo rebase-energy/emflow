@@ -22,11 +22,10 @@ run code from people you trust, and prefer pinning ``--revision`` to a commit SH
 """
 
 import argparse
-import importlib.util
 import os
 from pathlib import Path
 
-import emflow as ef
+from emflow.run.submission import load_submission
 from emflow.run.verifier import Verifier, DEFAULT_LEADERBOARD
 
 
@@ -58,43 +57,6 @@ def resolve_to_local(ref: str, revision=None, repo_type="model") -> Path:
           f"{' @ ' + revision if revision else ''} ...")
     return Path(hf_hub_download(repo_id=repo_id, filename=filename,
                                 repo_type=repo_type, revision=revision, token=token))
-
-
-def load_submission(path: Path):
-    """Import a submission module and return the submitted Predictor.
-
-    Accepts either form — whichever the submitter prefers:
-      * a module-level ``emflow.Predictor`` instance (e.g. ``model = MyModel()``), or
-      * a ``get_model() -> emflow.Predictor`` factory that returns a fresh model.
-
-    Either way the verifier trains the model itself on the official split, so the
-    leakage guarantees are identical.
-    """
-    spec = importlib.util.spec_from_file_location(path.stem, path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    # Factory form (back-compatible with the original template).
-    if hasattr(module, "get_model"):
-        return module.get_model()
-
-    # Bare-object form: a module-level Predictor instance. Prefer one named
-    # `model`, else fall back to the sole Predictor instance in the module.
-    candidate = getattr(module, "model", None)
-    if isinstance(candidate, ef.Predictor):
-        return candidate
-    instances = [v for v in vars(module).values() if isinstance(v, ef.Predictor)]
-    if len(instances) == 1:
-        return instances[0]
-    if len(instances) > 1:
-        raise AttributeError(
-            f"{path} defines several emflow.Predictor instances — name the one to "
-            f"submit as `model = ...`, or expose get_model()."
-        )
-    raise AttributeError(
-        f"{path} must define `model = <emflow.Predictor>` or "
-        f"get_model() -> emflow.Predictor"
-    )
 
 
 def main():
