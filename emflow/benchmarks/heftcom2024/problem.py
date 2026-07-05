@@ -110,6 +110,7 @@ def _dataset_from_dir(root: Path) -> ef.Dataset:
         frame = pd.read_parquet(root / spec["path"])
         fields[name] = ef.Field(name=name, frame=frame, kind=spec.get("kind", "actual"),
                                 availability_lag=spec.get("availability_lag", "0h"),
+                                knowledge_col=spec.get("knowledge_col"),
                                 description=spec.get("description"))
     return ef.Dataset(name=manifest["name"], description=manifest.get("description"),
                       fields=fields)

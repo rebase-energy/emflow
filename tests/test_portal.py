@@ -117,6 +117,73 @@ class TestTimeView:
         assert view.static("meta")["capacity"].iloc[0] == 10.0
 
 
+def bitemporal_field():
+    """One hourly series with revisions: each value arrives preliminary after
+    30min and is revised (value + 100) 48h later."""
+    idx = hourly_index("2025-01-01", 72)
+    prelim = pd.DataFrame({
+        "power": np.arange(72.0),
+        "knowledge_time": idx + pd.Timedelta("30min"),
+    }, index=idx)
+    settled = pd.DataFrame({
+        "power": np.arange(72.0) + 100.0,
+        "knowledge_time": idx + pd.Timedelta("48h"),
+    }, index=idx)
+    frame = pd.concat([settled, prelim])  # deliberately unsorted
+    return Field("power", frame, knowledge_col="knowledge_time")
+
+
+class TestBitemporal:
+    def test_preliminary_then_settled(self):
+        portal = DataPortal(Dataset(name="d", fields={"power": bitemporal_field()}))
+        t0 = pd.Timestamp("2025-01-01 00:00", tz="UTC")
+        # 1h after measurement: preliminary value visible
+        early = portal.history(t0 + pd.Timedelta("1h"), "power")
+        assert early.loc[t0, "power"] == 0.0
+        # 49h after: the revision has landed and wins
+        late = portal.history(t0 + pd.Timedelta("49h"), "power")
+        assert late.loc[t0, "power"] == 100.0
+
+    def test_knowledge_axis_never_leaks(self):
+        field = bitemporal_field()
+        portal = DataPortal(Dataset(name="d", fields={"power": field}))
+        for asof in hourly_index("2025-01-01", 72)[::7]:
+            hist = portal.history(asof, "power")
+            # every served value must have been knowable: reconstruct its
+            # knowledge time from the raw frame and check
+            raw = field.frame
+            for ts, row in hist.iterrows():
+                candidates = raw[(raw.index == ts) & (raw["power"] == row["power"])]
+                assert (candidates["knowledge_time"] <= asof).all()
+
+    def test_knowledge_column_dropped_from_output(self):
+        portal = DataPortal(Dataset(name="d", fields={"power": bitemporal_field()}))
+        hist = portal.history("2025-01-02", "power")
+        assert list(hist.columns) == ["power"]
+
+    def test_strict_excludes_knowledge_instant(self):
+        portal = DataPortal(Dataset(name="d", fields={"power": bitemporal_field()}))
+        t0 = pd.Timestamp("2025-01-01 00:30", tz="UTC")  # first prelim knowledge time
+        assert portal.history(t0, "power", strict=True).empty
+        assert not portal.history(t0, "power", strict=False).empty
+
+    def test_settlement_lag_is_max_revision_delay(self):
+        assert bitemporal_field().settlement_lag == pd.Timedelta("48h")
+
+    def test_lag_and_knowledge_col_mutually_exclusive(self):
+        idx = hourly_index("2025-01-01", 2)
+        frame = pd.DataFrame({"power": [1.0, 2.0], "kt": idx}, index=idx)
+        with pytest.raises(ValueError, match="mutually exclusive"):
+            Field("power", frame, availability_lag="1h", knowledge_col="kt")
+
+    def test_knowledge_before_measurement_rejected(self):
+        idx = hourly_index("2025-01-01", 2)
+        frame = pd.DataFrame({"power": [1.0, 2.0],
+                              "kt": idx - pd.Timedelta("1h")}, index=idx)
+        with pytest.raises(ValueError, match="cannot be known"):
+            Field("power", frame, knowledge_col="kt")
+
+
 class TestField:
     def test_series_coerced_and_sorted(self):
         s = pd.Series([2.0, 1.0], index=hourly_index("2025-01-01", 2)[::-1])

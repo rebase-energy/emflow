@@ -34,6 +34,12 @@ class DataPortal:
     def history(self, asof, name: str, window=None, strict=False) -> pd.DataFrame:
         """Actual values of field ``name`` knowable at ``asof``.
 
+        For bitemporal fields (``knowledge_col`` set) the filter runs on the
+        knowledge axis and, per measurement timestamp, the **latest revision**
+        already knowable wins — a backtest sees preliminary values exactly as
+        a live participant did. The knowledge column is dropped from the
+        returned frame.
+
         ``window`` (optional, anything ``pd.Timedelta`` accepts) limits the
         result to the trailing window before the availability cutoff — an
         efficiency knob, never a leakage one.
@@ -44,6 +50,22 @@ class DataPortal:
         """
         f = self._actual(name)
         asof = pd.Timestamp(asof)
+        tz = f.frame.index.tz
+        if tz is not None and asof.tz is None:
+            asof = asof.tz_localize(tz)
+
+        if f.knowledge_col is not None:
+            kt = f.frame[f.knowledge_col]
+            knowable = (kt < asof) if strict else (kt <= asof)
+            out = f.frame[knowable.to_numpy()]
+            # Frame is sorted by (timestamp, knowledge_time): the last
+            # occurrence per timestamp is the latest knowable revision.
+            out = out[~out.index.duplicated(keep="last")]
+            out = out.drop(columns=[f.knowledge_col])
+            if window is not None:
+                out = out.loc[asof - pd.Timedelta(window):]
+            return out
+
         cutoff = asof - f.availability_lag
         out = f.frame.loc[:cutoff]
         if strict and len(out) and out.index[-1] == cutoff:

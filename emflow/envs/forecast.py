@@ -100,10 +100,10 @@ class ForecastEnv(gym.Env):
                 )
             target_column = field.frame.columns[0]
         self.target_column = target_column
-        self._target_lag = field.availability_lag
+        self._target_lag = field.settlement_lag
         # Everything a settlement needs must be knowable: subclasses that pull
         # extra fields (e.g. market prices) raise this to the max of the lags.
-        self._settle_lag = field.availability_lag
+        self._settle_lag = field.settlement_lag
 
         self._i = 0
         self._pending: t.List[t.Tuple[Origin, pd.DataFrame]] = []

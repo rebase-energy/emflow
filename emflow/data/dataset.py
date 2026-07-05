@@ -107,6 +107,7 @@ class Dataset:
             fields[name] = Field(
                 name=name, frame=frame, kind=kind,
                 availability_lag=spec.get("availability_lag", "0h"),
+                knowledge_col=spec.get("knowledge_col"),
                 description=spec.get("description"),
             )
 

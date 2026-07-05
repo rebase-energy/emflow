@@ -53,12 +53,24 @@ class Verifier:
         self.split = split
 
     def verify(self, submission, name=None, record=True, verbose=True,
-               mode: str = "auto") -> Result:
+               mode: str = "auto", metadata: t.Optional[dict] = None) -> Result:
         """Evaluate a submission and return its :class:`Result`.
 
         ``submission`` is a fresh :class:`Predictor` or a zero-arg factory
         returning one (the ``get_model()`` convention).
+
+        ``metadata`` (optional, str/number values) is recorded verbatim on the
+        leaderboard row and echoed on the scorecard. This is the seam for
+        search harnesses to make performance claims honest about selection:
+        rebase-hillclimb passes e.g. ``{"n_trials": N}`` from its run journal,
+        and any deflation/PBO math lives there — emflow only records it.
         """
+        if metadata:
+            collisions = set(metadata) & set(LEADERBOARD_FIELDS)
+            if collisions:
+                raise ValueError(
+                    f"metadata keys {sorted(collisions)} collide with leaderboard fields"
+                )
         model = submission() if callable(submission) and not isinstance(submission, Predictor) \
             else submission
         if not isinstance(model, Predictor):
@@ -72,16 +84,16 @@ class Verifier:
         result = Experiment(self.problem, model, split=self.split).run(mode=mode)
 
         if verbose:
-            self._print_scorecard(result)
+            self._print_scorecard(result, metadata)
         if record and self.leaderboard_path:
-            self._append_leaderboard(result)
+            self._append_leaderboard(result, metadata)
         return result
 
     # -- reporting ----------------------------------------------------------------
 
-    def _row(self, r: Result) -> dict:
+    def _row(self, r: Result, metadata: t.Optional[dict] = None) -> dict:
         skill = r.analysis.get("PersistenceSkill", {})
-        return {
+        row = {
             "submitted_at": _dt.datetime.now().isoformat(timespec="seconds"),
             "submission": r.model,
             "problem": r.problem,
@@ -94,9 +106,12 @@ class Verifier:
             "beats_persistence": skill.get("beats_persistence", ""),
             "rank": r.rank_against(self.problem) or "",
         }
+        if metadata:
+            row.update({key: metadata[key] for key in sorted(metadata)})
+        return row
 
-    def _print_scorecard(self, r: Result) -> None:
-        row = self._row(r)
+    def _print_scorecard(self, r: Result, metadata: t.Optional[dict] = None) -> None:
+        row = self._row(r, metadata)
         print(f"\n{'=' * 64}")
         print(f"Submission : {r.model}")
         print(f"Problem    : {r.problem}  [{r.split} split]")
@@ -117,16 +132,38 @@ class Verifier:
             n = len(self.problem.reference_scores)
             print(f"Ranking    : would have placed {row['rank']} of {n} "
                   f"in the original competition")
+        if metadata:
+            for key in sorted(metadata):
+                print(f"{key:<11}: {metadata[key]}")
         print(f"Leakage    : impossible by construction (portal-served observations)")
         print(f"{'=' * 64}\n")
 
-    def _append_leaderboard(self, r: Result) -> None:
+    def _append_leaderboard(self, r: Result, metadata: t.Optional[dict] = None) -> None:
         path = self.leaderboard_path
         path.parent.mkdir(parents=True, exist_ok=True)
-        new = not path.exists()
+        row = self._row(r, metadata)
+
+        if path.exists():
+            # Respect the existing header: fill absent columns, warn on and
+            # drop keys the file doesn't know about (schema is fixed at creation).
+            with path.open(newline="") as f:
+                fieldnames = next(csv.reader(f))
+            dropped = set(row) - set(fieldnames)
+            if dropped:
+                import warnings
+                warnings.warn(
+                    f"leaderboard {path} has no columns for metadata keys "
+                    f"{sorted(dropped)}; they were not recorded"
+                )
+            row = {k: row.get(k, "") for k in fieldnames}
+            new = False
+        else:
+            fieldnames = LEADERBOARD_FIELDS + sorted(set(row) - set(LEADERBOARD_FIELDS))
+            new = True
+
         with path.open("a", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=LEADERBOARD_FIELDS)
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
             if new:
                 writer.writeheader()
-            writer.writerow(self._row(r))
+            writer.writerow(row)
         print(f"Appended to leaderboard: {path}")

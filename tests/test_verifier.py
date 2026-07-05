@@ -97,6 +97,25 @@ class TestVerifierPolicy:
         assert list(rows["submission"]) == ["instance", "factory"]
         assert (rows["problem"] == "toy:hourly").all()
 
+    def test_metadata_recorded_on_leaderboard(self, tmp_path):
+        """The hillclimb seam: externally supplied metadata (e.g. n_trials from
+        the search journal) lands verbatim in the leaderboard row."""
+        lb = tmp_path / "leaderboard.csv"
+        verifier = Verifier(make_toy_problem(), leaderboard_path=lb)
+        verifier.verify(HonestPersistence(), name="run-1", verbose=False,
+                        metadata={"n_trials": 42, "search": "hillclimb"})
+        verifier.verify(HonestPersistence(), name="run-2", verbose=False)
+        rows = pd.read_csv(lb)
+        assert rows.loc[0, "n_trials"] == 42
+        assert rows.loc[0, "search"] == "hillclimb"
+        assert pd.isna(rows.loc[1, "n_trials"])  # absent metadata -> empty cell
+
+    def test_metadata_key_collision_rejected(self):
+        verifier = Verifier(make_toy_problem(), leaderboard_path=None)
+        with pytest.raises(ValueError, match="collide"):
+            verifier.verify(HonestPersistence(), verbose=False,
+                            metadata={"score": 0.0})
+
     def test_rejects_non_predictor(self):
         verifier = Verifier(make_toy_problem(), leaderboard_path=None)
         with pytest.raises(TypeError, match="Predictor"):

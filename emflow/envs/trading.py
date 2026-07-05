@@ -40,7 +40,7 @@ class TradingEnv(ForecastEnv):
         self.prices_field = prices_field
         self.da_column = da_column
         self.ss_column = ss_column
-        prices_lag = self.portal.dataset.field(prices_field).availability_lag
+        prices_lag = self.portal.dataset.field(prices_field).settlement_lag
         self._settle_lag = max(self._settle_lag, prices_lag)
 
     def _validate(self, action, origin: Origin) -> pd.DataFrame:
