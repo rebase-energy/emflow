@@ -27,6 +27,7 @@ from .problems import (
     PinballLoss,
     Problem,
     ProblemNotIngestedError,
+    cache_problem_data,
     RefScore,
     RootMeanSquaredError,
     Splits,
@@ -63,7 +64,7 @@ __all__ = [
     'Problem', 'Splits', 'RefScore', 'Objective', 'IssueSchedule', 'Origin',
     'Metric', 'MeanAbsoluteError', 'MeanSquaredError', 'RootMeanSquaredError',
     'MeanAbsolutePercentageError', 'PinballLoss', 'PeakTimingError',
-    'list_problems', 'load_problem', 'ProblemNotIngestedError',
+    'list_problems', 'load_problem', 'cache_problem_data', 'ProblemNotIngestedError',
     # models
     'Predictor', 'FeaturePredictor', 'Optimizer', 'Agent', 'Simulator',
     # envs

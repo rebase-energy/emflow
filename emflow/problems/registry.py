@@ -58,6 +58,49 @@ def list_problems() -> t.List[str]:
     return sorted(problems)
 
 
+def _problem_module(name: str):
+    folder = name.partition(":")[0]
+    modname = folder.replace("-", "_")
+    for base in BASES:
+        try:
+            return importlib.import_module(f"{base}.{modname}.problem")
+        except ModuleNotFoundError:
+            continue
+    raise KeyError(f"unknown problem {name!r}; known: {list_problems()}")
+
+
+def cache_problem_data(name: str, include_private: bool = False, token: str | None = None) -> bool:
+    """Materialize a benchmark's HF-hosted data into its local build cache so
+    later loads (e.g. sandboxed evaluations running offline and without
+    credentials) read from disk.
+
+    Benchmarks that follow the ``PUBLIC_REPO``/``PRIVATE_REPO``/``LOCAL_BUILD``
+    convention are downloaded via huggingface_hub (token from the argument or
+    ambient env). Problems that ship packaged data have nothing to cache —
+    returns False. ``include_private`` deliberately defaults to False: holdout
+    labels should stay off local disk in sandboxed setups and be read straight
+    from the gated repo by the credentialed verifier instead.
+    """
+    module = _problem_module(name)
+    build = getattr(module, "LOCAL_BUILD", None)
+    public = getattr(module, "PUBLIC_REPO", None)
+    if build is None or public is None:
+        return False
+    from huggingface_hub import snapshot_download
+
+    repos = [(public, "public")]
+    if include_private and getattr(module, "PRIVATE_REPO", None):
+        repos.append((module.PRIVATE_REPO, "private"))
+    for repo, kind in repos:
+        repo_id = repo.removeprefix("rb://dataset/")
+        target = build / kind
+        if (target / "rebase.yaml").exists():
+            continue
+        snapshot_download(repo_id=repo_id, repo_type="dataset",
+                          local_dir=str(target), token=token)
+    return True
+
+
 def load_problem(name: str) -> Problem:
     """Load a problem by name; always returns a :class:`Problem`.
 
