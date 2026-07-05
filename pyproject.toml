@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "emflow"
-version = "0.2.0"
+version = "0.3.0"
 authors = [
     { name = "rebase.energy" }
 ]
@@ -17,6 +17,8 @@ dependencies = [
     "gymnasium>=1.1.1",
     "fsspec>=2023.1.0",
     "huggingface_hub>=0.20",  # Hugging Face-backed rb:// filesystem
+    "pyyaml>=6.0",            # rebase.yaml dataset manifests
+    "pyarrow>=15.0.0",        # parquet IO for benchmark datasets
 ]
 
 [project.urls]
@@ -27,7 +29,7 @@ Documentation = "https://docs.emflow.org/en/latest"
 # Make the ``rb://`` scheme discoverable by fsspec without an explicit
 # ``import emflow`` — same mechanism huggingface_hub uses for ``hf://``.
 [project.entry-points."fsspec.specs"]
-rb = "emflow.io.rebasefs:RebaseFileSystem"
+rb = "emflow.data.io.rebasefs:RebaseFileSystem"
 
 [project.optional-dependencies]
 examples = [
@@ -37,7 +39,12 @@ examples = [
 submissions = [
     "huggingface_hub>=0.20",
 ]
+build-data = [  # scripts/build_*.py dataset ingestion
+    "xarray>=2024.1",
+    "netCDF4>=1.6",
+]
 dev = [
+    "pytest>=8.0",
     "build>=1.2.2",
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.5",
@@ -55,3 +62,10 @@ where = ["."]
 
 [tool.setuptools.package-data]
 "emflow.examples.data" = ["*.csv", "*.parquet"]
+"emflow.benchmarks.heftcom2024" = ["*.csv"]
+"emflow.benchmarks.gefcom2014" = ["*.yaml"]
+"emflow.benchmarks.gefcom2012_load" = ["*.yaml"]
+"emflow.benchmarks.gefcom2012_wind" = ["*.yaml"]
+"emflow.benchmarks.gefcom2017" = ["*.yaml"]
+"emflow.benchmarks.bfcom2018" = ["*.yaml"]
+"emflow.benchmarks.bigdeal2022" = ["*.yaml"]

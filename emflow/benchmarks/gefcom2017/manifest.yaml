@@ -1,0 +1,13 @@
+name: gefcom2017
+title: Global Energy Forecasting Competition 2017 — hierarchical probabilistic load
+status: not-ingested
+source:
+  paper: "Hong, Xie & Black, 'Global energy forecasting competition 2017: Hierarchical probabilistic load forecasting', IJF 35(4), 2019"
+  data: "github.com/camroach87/gefcom2017data (R package; ISO New England public data)"
+  license: open (ISO-NE public data)
+schedule: month-ahead probabilistic (9 quantiles), 6 rounds, 10 zones (ISO-NE hierarchy)
+metric: pinball loss
+notes: >
+  Hourly loads 2003-2017 for New England zones + aggregates, with dry-bulb and
+  dew-point temperatures. Rounds map to explicit IssueSchedule origins; the
+  zonal hierarchy fits one Field with one column per zone.

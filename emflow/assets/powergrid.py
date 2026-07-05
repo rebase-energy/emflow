@@ -1,3 +1,4 @@
-from energydatamodel.hydro import Reservoir, HydroTurbine, HydroPowerPlant
+from energydatamodel.grid import GridNode
+from energydatamodel import BiddingZone, ControlArea, SynchronousArea
 
-__all__ = ["Reservoir", "HydroTurbine", "HydroPowerPlant"]
+__all__ = ["GridNode", "BiddingZone", "ControlArea", "SynchronousArea"]

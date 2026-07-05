@@ -1,27 +1,38 @@
 # Model submissions
 
-Submit a forecasting model as **code**, and the verifier scores it on the
-`swedish-temperatures:ar` problem with **no possibility of data leakage**.
+Submit a forecasting model as **code**, and the verifier scores it on an emflow
+problem (default `swedish-temperatures:ar`) with **no possibility of data
+leakage**.
 
 ## How it works
 
-- You send a `submission.py` that exposes **`get_model() -> emflow.Predictor`** returning
-  a *fresh, untrained* model.
-- The verifier **trains your model itself** on the official training split (everything
-  before 2026), then scores it on the held-out 2026 test set using **strict
-  walk-forward**: to forecast hour `t`, your model is given only the series strictly
-  before `t` (the value at `t` is hidden). You never see the test targets, and you
-  cannot train on them — so the reported score is trustworthy.
+- You send a `submission.py` exposing **`get_model() -> emflow.Predictor`**
+  (or a module-level `model = ...` instance) returning a *fresh, untrained* model.
+- The verifier **fits your model itself** on the official training view, then
+  scores it origin-by-origin on the **holdout split**. Every observation your
+  model sees is served through emflow's point-in-time `DataPortal`: at each
+  forecast origin it contains only what was knowable at that moment — the
+  targets are structurally absent, so the reported score is trustworthy.
 
 ## Your model contract
 
-Subclass `emflow.Predictor` (see `template_submission.py`):
+Subclass `emflow.Predictor` (see `template_submission.py` and
+`example_submission.py`):
 
-- `train(self, train_df)` — fit on the wide temperature DataFrame you're given
-  (hourly UTC index, one column per station). Use only what's passed.
-- `predict(self, input_df)` — return a DataFrame/Series whose entry at the **last
-  timestamp** of `input_df` is your 1-step-ahead forecast for that hour. Use only past
-  lags; the value at the last timestamp is deliberately `NaN`.
+- `fit(self, train)` — `train` is a **TimeView** frozen at the training cutoff.
+  Pull the training series with `train.history("temperature")`. Use only what
+  it serves.
+- `predict(self, obs)` — `obs` is an **Observation**: `obs.target_index` is
+  what you must forecast, `obs.history("temperature")` is everything knowable
+  at the origin. Return a DataFrame indexed by `obs.target_index` with a
+  `"point"` column.
+
+For faster evaluation (and richer features), subclass
+`emflow.FeaturePredictor` instead: declare declarative feature specs
+(`Lag`, `Rolling`, `ForecastField`, `Calendar`) and implement
+`predict_tabular(X)` — the verifier then runs you in vectorized mode
+(one batched call instead of thousands). See
+`emflow/examples/swedish_temperatures/predictor.py` for a full example.
 
 ## Submit + self-check
 
@@ -32,15 +43,19 @@ Subclass `emflow.Predictor` (see `template_submission.py`):
    python scripts/verify_submission.py submissions/template_submission.py
    ```
 
-   This prints a scorecard (your MAE/RMSE vs persistence and seasonal-naive baselines,
-   `PASS` if you beat persistence) and appends a row to `submissions/leaderboard.csv`.
+   This prints a scorecard (your score vs the persistence baseline, `PASS` if
+   you beat it) and appends a row to `submissions/leaderboard.csv`.
 
-3. Submit your model — either send the `submission.py` file directly, or upload it to a
-   HuggingFace repo (see below).
+3. Submit your model — send the `submission.py` directly, or upload it to a
+   HuggingFace repo (below).
+
+Iterate on the **validation** split (`--split validation`); the holdout is
+scored once, at submission time. Iterating against the holdout invalidates
+your score.
 
 ## Submit via HuggingFace
 
-The intern uploads `submission.py` to a HuggingFace repo and shares the repo id:
+Upload `submission.py` to a HF repo and share the repo id:
 
 ```python
 from huggingface_hub import HfApi
@@ -50,8 +65,7 @@ api.upload_file(path_or_fileobj="submission.py", path_in_repo="submission.py",
                 repo_id="your-username/emflow-submission", repo_type="model")
 ```
 
-The evaluator then verifies it straight from the Hub (needs the `submissions` extra:
-`uv sync --extra submissions`):
+The evaluator verifies it straight from the Hub:
 
 ```bash
 python scripts/verify_submission.py hf://your-username/emflow-submission/submission.py \
@@ -59,10 +73,10 @@ python scripts/verify_submission.py hf://your-username/emflow-submission/submiss
 # add --repo-type dataset if it was uploaded to a dataset repo
 ```
 
-For a private repo, set `HF_TOKEN` (or `HUGGINGFACE_TOKEN`) in the environment before
-running. The downloaded file is then trained + scored by the same strict walk-forward
-verifier, so the leakage guarantees are identical to the local path.
+For a private repo, set `HF_TOKEN` (or `HUGGINGFACE_TOKEN`) before running.
 
-> **Note (for whoever runs the verifier):** `verify_submission.py` imports and executes
-> the submission file — local *or downloaded from HuggingFace*. Only run code from people
-> you trust, and prefer pinning `--revision` to a commit SHA.
+> **Note (for whoever runs the verifier):** `verify_submission.py` imports and
+> executes the submission file — local *or downloaded from HuggingFace*. Only
+> run code from people you trust, and prefer pinning `--revision` to a commit
+> SHA. For fully untrusted (agent) submissions, run in a sandbox with no
+> network and keep holdout labels in a private `rb://` repo.

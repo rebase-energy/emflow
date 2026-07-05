@@ -26,8 +26,6 @@ emflow: Open-source energy modelling framework
    :caption: 🔋 Assets
 
    assets/base
-   assets/geospatial
-   assets/timeseries
    assets/solar
    assets/wind
    assets/battery
@@ -36,15 +34,45 @@ emflow: Open-source energy modelling framework
    assets/powergrid
    assets/energycollection
 
+.. _data:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 🗄️ Data
+
+   data/field
+   data/dataset
+   data/portal
+
 .. _problems:
 
 .. toctree::
    :maxdepth: 2
    :caption: 🧩 Problems
 
-   problems/dataset
-   problems/environment
+   problems/problem
+   problems/schedule
+   problems/metrics
    problems/objective
+   problems/registry
+
+.. _envs:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 🌍 Environments
+
+   envs/forecast
+   envs/trading
+
+.. _features:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 🧮 Features
+
+   features/spec
+   features/materialize
 
 .. _spaces:
 
@@ -52,9 +80,7 @@ emflow: Open-source energy modelling framework
    :maxdepth: 2
    :caption: 📦 Spaces
 
-   spaces/base
-   spaces/input
-   spaces/output
+   spaces/dataframe
 
 .. _models:
 
@@ -68,19 +94,13 @@ emflow: Open-source energy modelling framework
    models/optimizer
    models/agent
 
-.. _experiments:
+.. _run:
 
 .. toctree::
    :maxdepth: 2
-   :caption: ♻️ Experiments
+   :caption: ♻️ Runs
 
-   experiments/experiment
-   experiments/benchmark
-   experiments/scenario
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   run/experiment
+   run/result
+   run/analyzers
+   run/verifier

@@ -1,0 +1,13 @@
+name: gefcom2012-load
+title: GEFCom2012 — hierarchical load forecasting
+status: not-ingested
+source:
+  paper: "Hong, Pinson & Fan, 'Global Energy Forecasting Competition 2012', IJF 30(2), 2014"
+  data: "Kaggle: global-energy-forecasting-competition-2012-load-forecasting (kaggle CLI, token in ../agent-work)"
+  license: "Kaggle competition rules — keep the HF repo PRIVATE (org-gated); do not redistribute publicly"
+schedule: backcasting 8 missing weeks + one week ex-ante, hourly, 20 zones + system
+metric: weighted RMSE (WRMSE)
+notes: >
+  4.5 years of hourly loads for 20 US utility zones with 11 temperature
+  stations. Needs the PeakTiming-style hierarchical aggregate scoring (zone
+  weights) and an explicit schedule for the 8 in-sample backcast weeks.

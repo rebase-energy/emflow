@@ -1,0 +1,13 @@
+name: bigdeal2022
+title: BigDEAL Challenge 2022 — forecasting peak timing of electricity demand
+status: not-ingested
+source:
+  paper: "Shukla & Hong, 'BigDEAL Challenge 2022: forecasting peak timing of electricity demand', IET Smart Grid 7(4), 2024 (doi 10.1049/stg2.12162)"
+  data: published with the paper (supplementary data)
+  license: open access (CC); confirm exact terms from the article supplement
+schedule: short-term ex-ante daily, forecasting the timing of daily peaks
+metric: peak timing error (hours) — emflow.PeakTimingError
+notes: >
+  78 teams / 121 contestants. The one competition in the roster whose metric
+  is about *when*, not *how much* — PeakTimingError is already implemented
+  and tested in emflow.problems.metrics.

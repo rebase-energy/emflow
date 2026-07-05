@@ -12,9 +12,10 @@ Usage:
     #          [--leaderboard submissions/leaderboard.csv] [--lookback HOURS]
 
 The submission file must expose ``get_model() -> emflow.Predictor`` returning a
-*fresh, untrained* predictor. The verifier trains it on the official training split
-and scores it via strict walk-forward (the submitter never sees the test targets), so
-the reported number cannot be inflated by data leakage.
+*fresh, untrained* predictor (or a module-level ``model = ...`` instance). The
+verifier fits it on the official training view and scores it on the holdout
+split, where every observation is served through the point-in-time DataPortal —
+so the reported number cannot be inflated by data leakage.
 
 SECURITY: this imports and executes the submission file (local or downloaded). Only
 run code from people you trust, and prefer pinning ``--revision`` to a commit SHA.
@@ -26,7 +27,7 @@ import os
 from pathlib import Path
 
 import emflow as ef
-from emflow.experiments.verifier import Verifier, DEFAULT_LEADERBOARD
+from emflow.run.verifier import Verifier, DEFAULT_LEADERBOARD
 
 
 def resolve_to_local(ref: str, revision=None, repo_type="model") -> Path:
@@ -102,8 +103,8 @@ def main():
     ap.add_argument("--problem", default="swedish-temperatures:ar")
     ap.add_argument("--name", default=None, help="submission name for the scorecard/leaderboard")
     ap.add_argument("--leaderboard", default=str(DEFAULT_LEADERBOARD))
-    ap.add_argument("--lookback", type=int, default=None,
-                    help="trailing hours of history per step (default: full history)")
+    ap.add_argument("--split", default="holdout", choices=["holdout", "validation"],
+                    help="which split to score (default: holdout — the official one)")
     ap.add_argument("--revision", default=None, help="HF commit SHA / tag / branch to pin")
     ap.add_argument("--repo-type", default="model", choices=["model", "dataset"],
                     help="HF repo type for hf:// references (default: model)")
@@ -114,8 +115,9 @@ def main():
     model = load_submission(path)
     name = args.name or path.stem
 
-    verifier = Verifier(problem=args.problem, leaderboard_path=args.leaderboard)
-    verifier.verify(model, name=name, lookback=args.lookback)
+    verifier = Verifier(problem=args.problem, leaderboard_path=args.leaderboard,
+                        split=args.split)
+    verifier.verify(model, name=name)
 
 
 if __name__ == "__main__":

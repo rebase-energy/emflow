@@ -1,0 +1,12 @@
+name: bfcom2018
+title: BigDEAL Forecasting Competition 2018 — load forecasting with recency effects
+status: not-ingested
+source:
+  paper: "blog.drhongtao.com/2018/11/winning-methods-from-bfcom2018-qualifying-match.html"
+  data: "Dr. Tao Hong's release (qualifying-match data linked from the blog post)"
+  license: research use; verify redistribution before making the HF repo public
+schedule: ex-ante daily load forecasting, hourly resolution
+metric: MAPE
+notes: >
+  Qualifying match of the BigDEAL 2018 competition: hourly load + temperature
+  history; winning methods documented on the blog for reference scores.

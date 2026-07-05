@@ -1,0 +1,13 @@
+name: gefcom2012-wind
+title: GEFCom2012 — wind power forecasting
+status: not-ingested
+source:
+  paper: "Hong, Pinson & Fan, 'Global Energy Forecasting Competition 2012', IJF 30(2), 2014"
+  data: "Kaggle: GEF2012-wind-forecasting (kaggle CLI, token in ../agent-work)"
+  license: "Kaggle competition rules — keep the HF repo PRIVATE (org-gated); do not redistribute publicly"
+schedule: 48h-ahead hourly forecasts, rolling every 36h, 7 wind farms
+metric: RMSE (normalized power)
+notes: >
+  Wind power (normalized) for 7 farms with (u, v) NWP at two heights as
+  forecast fields — maps directly onto Field(kind="forecast") with
+  (issue_time, valid_time).

@@ -1,2 +1,2 @@
-submitted_at,submission,problem,mode,metric_name,mae,rmse,n_points,persistence_mae,beats_persistence
-2026-06-02T15:37:44,example-submission,swedish-temperatures:ar,strict walk-forward (leakage impossible by construction),MeanAbsoluteError,0.2879,0.3994,1423,0.3125,True
+submitted_at,submission,problem,split,objective,score,n_origins,n_scored,persistence_score,beats_persistence,rank
+2026-07-05T12:32:28,example_submission,swedish-temperatures:ar,holdout,MeanAbsoluteError,0.339776,672,672,0.387202,True,

@@ -60,11 +60,14 @@ $$
 
 | Module         | Components     |
 | :----          | :----            |
-| 🔋&nbsp;`energysystem` | All energy asset and concept components defined by [EnergyDataModel](https://github.com/rebase-energy/EnergyDataModel) | 
-| 📦&nbsp;`spaces` | [`BaseSpace`](https://docs.emflow.org/en/latest/spaces/base.html), [`InputSpace`](https://docs.emflow.org/en/latest/spaces/input.html), [`StateSpace`](https://docs.emflow.org/en/latest/spaces/input.html), [`OutputSpace`](https://docs.emflow.org/en/latest/spaces/output.html),[`ActionSpace`](https://docs.emflow.org/en/latest/spaces/output.html) | 
-| 🧩&nbsp;`problems` | [`Dataset`](https://docs.emflow.org/en/latest/problem/dataset.html), [`Environment`](https://docs.emflow.org/en/latest/problem/environment.html), [`Objective`](https://docs.emflow.org/en/latest/problem/objective.html) | 
-| 🤖&nbsp;`models` | [`Model`](https://docs.emflow.org/en/latest/models/model.html), [`Simulator`](https://docs.emflow.org/en/latest/models/simulator.html), [`Predictor`](https://docs.emflow.org/en/latest/models/predictor.html), [`Optimizer`](https://docs.emflow.org/en/latest/models/optimizer.html), [`Agent`](https://docs.emflow.org/en/latest/models/agent.html) | 
-| ➡️&nbsp;`experiments` | [`Experiment`](https://docs.emflow.org/en/latest/experiments/experiment.html), [`Benchmark`](https://docs.emflow.org/en/latest/experiments/benchmark.html), [`Scenario`](https://docs.emflow.org/en/latest/experiments/scenario.html)| 
+| 🔋&nbsp;`assets` | All energy asset and concept components defined by [EnergyDataModel](https://github.com/rebase-energy/EnergyDataModel) |
+| 🗄️&nbsp;`data` | [`Field`](https://docs.emflow.org/en/latest/data/field.html), [`Dataset`](https://docs.emflow.org/en/latest/data/dataset.html), [`DataPortal`](https://docs.emflow.org/en/latest/data/portal.html) — point-in-time data access with availability semantics (leak-proof by construction) |
+| 🧩&nbsp;`problems` | [`Problem`](https://docs.emflow.org/en/latest/problems/problem.html), [`IssueSchedule`](https://docs.emflow.org/en/latest/problems/schedule.html), [`Objective`](https://docs.emflow.org/en/latest/problems/objective.html), metrics ([pinball, MAE, RMSE, peak timing, trading revenue](https://docs.emflow.org/en/latest/problems/metrics.html)) |
+| 🌍&nbsp;`envs` | [`ForecastEnv`](https://docs.emflow.org/en/latest/envs/forecast.html), [`TradingEnv`](https://docs.emflow.org/en/latest/envs/trading.html) — rolling-origin evaluation on the gymnasium API |
+| 🧮&nbsp;`features` | [`Lag`, `Rolling`, `ForecastField`, `Calendar`](https://docs.emflow.org/en/latest/features/spec.html) — declarative, point-in-time-correct feature specs |
+| 🤖&nbsp;`models` | [`Model`](https://docs.emflow.org/en/latest/models/model.html), [`Predictor`](https://docs.emflow.org/en/latest/models/predictor.html), [`Simulator`](https://docs.emflow.org/en/latest/models/simulator.html), [`Optimizer`](https://docs.emflow.org/en/latest/models/optimizer.html), [`Agent`](https://docs.emflow.org/en/latest/models/agent.html) |
+| ♻️&nbsp;`run` | [`Experiment`](https://docs.emflow.org/en/latest/run/experiment.html), [`Result`](https://docs.emflow.org/en/latest/run/result.html), [`Verifier`](https://docs.emflow.org/en/latest/run/verifier.html), [analyzers](https://docs.emflow.org/en/latest/run/analyzers.html) |
+| 🏆&nbsp;`benchmarks` | Historical competition problems: `heftcom2024` (forecasting + trading), `gefcom2012/2014/2017`, `bfcom2018`, `bigdeal2022` |
 
 Below is a diagram of the components' relation to each other and how they together enable creation of reproducible results from energy models. 
 
@@ -87,32 +90,29 @@ Concretely, this means that problems are solved through the following steps:
 Steps 1-4 are about understanding the **problem** and steps 5-6 are about creating and evaluating the **solution**. 
 
 ## Basic Usage
-In **emflow**, a reproducible experiment is represented by the following 4 components: 
-
-* [`Dataset`](https://docs.emflow.org/en/latest/problem/dataset.html)
-* [`Environment`](https://docs.emflow.org/en/latest/problem/environment.html)
-* [`Agent`](https://docs.emflow.org/en/latest/models/agent.html)
-* [`Objective`](https://docs.emflow.org/en/latest/problem/objective.html)
-
-Given a defined `dataset`, `env` (environment), `agent` (model) and `obj` (objective), the sequential decision loop is given by: 
+A benchmark problem bundles a dataset, an environment factory, a schedule, an
+objective and temporal splits. Load one, run a model through an `Experiment`,
+and inspect the `Result`:
 
 ```python
-# First your code to define dataset, env, agent and obj, here. 
-env = Environment(dataset=dataset)
-agent = Agent(dataset=dataset)
-obj = Objective(dataset=dataset)
+import emflow as ef
+from emflow.benchmarks.heftcom2024.baseline import BinnedQuantileBaseline
 
-state = env.reset()
-done = False
-while done is not True:
-    action = agent.act(state)
-    state, exogeneous, done, info = env.step(action)
-    cost = obj.calculate(state, action, exogeneous)
+problem = ef.load_problem("heftcom2024:forecasting")   # a real competition
+result = ef.Experiment(problem, BinnedQuantileBaseline()).run()
 
-env.close()
+print(result.score)                          # pinball loss on the validation split
+print(result.analysis["PersistenceSkill"])   # skill vs the persistence baseline
+print(result.rank_against(problem))          # place on the official 2024 leaderboard
 ```
 
-For a full walkthrough go to the [documentation](https://docs.emflow.org/en/latest/walkthrough.html#) or open in [Colab](https://colab.research.google.com/github/rebase-energy/emflow/blob/main/emflow/examples/walkthrough/notebook.ipynb). 
+Every observation a model sees is served through the point-in-time
+[`DataPortal`](https://docs.emflow.org/en/latest/data/portal.html), so
+look-ahead leakage is impossible by construction — which is what makes the
+scores trustworthy for agent benchmarking. Untrusted submissions are scored
+with the [`Verifier`](https://docs.emflow.org/en/latest/run/verifier.html)
+on a held-out split whose labels live in a private repo (see
+`submissions/README.md`).
 
 ## Installation
 We recommend installing using a virtual environment like [venv](https://docs.python.org/3/library/venv.html), [poetry](https://python-poetry.org/) or [uv](https://docs.astral.sh/uv/). 

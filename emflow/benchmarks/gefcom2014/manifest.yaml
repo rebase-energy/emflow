@@ -1,0 +1,15 @@
+name: gefcom2014
+title: Global Energy Forecasting Competition 2014
+tracks: [load, price, wind, solar]
+status: not-ingested
+source:
+  paper: "Hong et al., 'Probabilistic energy forecasting: GEFCom2014 and beyond', IJF 32(3), 2016"
+  data: "Dr. Tao Hong's data release (https://blog.drhongtao.com/2017/03/gefcom2014-load-forecasting-data.html); solar-track CSVs already in emflow/examples/data"
+  license: research use; verify redistribution terms before making the HF repo public
+schedule: rolling monthly tasks (15 incremental tasks per track), probabilistic (99 quantiles)
+metric: pinball loss
+notes: >
+  Four tracks: probabilistic load (temperature-driven), electricity price,
+  wind power (10 zones, ECMWF NWP), solar power (3 Australian plants, ECMWF
+  NWP). Ingestion: one HF repo with per-track fields; per-task explicit
+  IssueSchedule; reference scores from the published final leaderboards.
