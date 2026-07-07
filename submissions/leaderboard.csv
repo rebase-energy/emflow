@@ -18,3 +18,10 @@ submitted_at,submission,problem,split,objective,score,n_origins,n_scored,persist
 2026-07-06T08:40:40,20260706-064450-grid-solar-gr/grid-solar-gr,grid:solar-gr,holdout,MeanAbsoluteError,454.269574,504,11820,2693.455668,True,
 2026-07-06T08:47:03,20260706-065024-grid-solar-hu/grid-solar-hu,grid:solar-hu,holdout,MeanAbsoluteError,203.097965,504,11820,1567.812225,True,
 2026-07-06T08:47:51,20260706-065154-grid-solar-pl/grid-solar-pl,grid:solar-pl,holdout,MeanAbsoluteError,772.244774,504,11820,4947.48679,True,
+2026-07-07T10:25:52,20260707-090542-grid-demand-ba/grid-demand-ba,grid:demand-ba,holdout,MeanAbsoluteError,134.450055,504,11508,301.533514,True,
+2026-07-07T10:40:22,20260707-090542-grid-solar-at/grid-solar-at,grid:solar-at,holdout,MeanAbsoluteError,202.748736,504,11820,1814.688409,True,
+2026-07-07T10:52:19,20260707-090542-grid-solar-ch/grid-solar-ch,grid:solar-ch,holdout,MeanAbsoluteError,136.440189,504,11820,1611.98459,True,
+2026-07-07T11:06:48,20260707-110427-seed-repro/gefcom2014-solar,gefcom2014:solar,holdout,PinballLoss,nan,36,0,nan,,14
+2026-07-07T12:18:01,20260707-102902-grid-solar-sk/grid-solar-sk,grid:solar-sk,holdout,MeanAbsoluteError,14.759473,504,11820,136.573638,True,
+2026-07-07T12:19:30,20260707-102902-grid-solar-it-cso/grid-solar-it-cso,grid:solar-it-cso,holdout,MeanAbsoluteError,129.250965,504,11820,1581.314319,True,
+2026-07-07T14:09:00,20260707-121804-grid-solar-it-cal/grid-solar-it-cal,grid:solar-it-cal,holdout,MeanAbsoluteError,10.888364,504,11820,157.799492,True,
