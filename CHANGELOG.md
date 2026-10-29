@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **Dependencies**: require `energydatamodel>=0.12.0,<0.13.0` (was
+  `>=0.7.0,<0.8.0`), which brings `timedatamodel` 0.12.0. No code changes
+  were needed: every `energydatamodel` name emflow re-exports from
+  `emflow.assets` still exists in 0.12. Side effect: energydatamodel 0.12
+  no longer pulls in geopandas or pvlib (pvlib is now its optional `[solar]`
+  extra), so the lockfile drops geopandas, pvlib, scipy, pyproj, pyogrio,
+  h5py and pytz.
+
 ## 0.3.0 (2026-07-07)
 
 - **Integration contract**: `emflow.run.submission` is the stable surface for
