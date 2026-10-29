@@ -10,7 +10,7 @@
     <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green.svg">
   </a>
   <a href="https://pypi.org/project/emflow/">
-    <img alt="PyPI version" src="https://img.shields.io/pypi/v/energydatamodel.svg?color=blue">
+    <img alt="PyPI version" src="https://img.shields.io/pypi/v/emflow.svg?color=blue">
   </a>
   <a href="https://dub.sh/yTqMriJ">
     <img alt="Join us on Slack" src="https://img.shields.io/badge/Join%20us%20on%20Slack-%234A154B?style=flat&logo=slack&logoColor=white">
@@ -33,7 +33,7 @@
 
 **⬇️ [Installation](#installation)**
 &ensp;|&ensp;
-**📖 [Documentation](https://docs.energydatamodel.org/en/latest/)**
+**📖 [Documentation](https://docs.enflow.org/en/latest/)**
 &ensp;|&ensp;
 **🚀 [Try out now in Colab](https://colab.research.google.com/github/rebase-energy/emflow/blob/main/emflow/examples/heftcom2024/notebook.ipynb)**
 &ensp;|&ensp;
@@ -61,12 +61,12 @@ $$
 | Module         | Components     |
 | :----          | :----            |
 | 🔋&nbsp;`assets` | All energy asset and concept components defined by [EnergyDataModel](https://github.com/rebase-energy/EnergyDataModel) |
-| 🗄️&nbsp;`data` | [`Field`](https://docs.emflow.org/en/latest/data/field.html), [`Dataset`](https://docs.emflow.org/en/latest/data/dataset.html), [`DataPortal`](https://docs.emflow.org/en/latest/data/portal.html) — point-in-time data access with availability semantics (leak-proof by construction) |
-| 🧩&nbsp;`problems` | [`Problem`](https://docs.emflow.org/en/latest/problems/problem.html), [`IssueSchedule`](https://docs.emflow.org/en/latest/problems/schedule.html), [`Objective`](https://docs.emflow.org/en/latest/problems/objective.html), metrics ([pinball, MAE, RMSE, peak timing, trading revenue](https://docs.emflow.org/en/latest/problems/metrics.html)) |
-| 🌍&nbsp;`envs` | [`ForecastEnv`](https://docs.emflow.org/en/latest/envs/forecast.html), [`TradingEnv`](https://docs.emflow.org/en/latest/envs/trading.html) — rolling-origin evaluation on the gymnasium API |
-| 🧮&nbsp;`features` | [`Lag`, `Rolling`, `ForecastField`, `Calendar`](https://docs.emflow.org/en/latest/features/spec.html) — declarative, point-in-time-correct feature specs |
-| 🤖&nbsp;`models` | [`Model`](https://docs.emflow.org/en/latest/models/model.html), [`Predictor`](https://docs.emflow.org/en/latest/models/predictor.html), [`Simulator`](https://docs.emflow.org/en/latest/models/simulator.html), [`Optimizer`](https://docs.emflow.org/en/latest/models/optimizer.html), [`Agent`](https://docs.emflow.org/en/latest/models/agent.html) |
-| ♻️&nbsp;`run` | [`Experiment`](https://docs.emflow.org/en/latest/run/experiment.html), [`Result`](https://docs.emflow.org/en/latest/run/result.html), [`Verifier`](https://docs.emflow.org/en/latest/run/verifier.html), [analyzers](https://docs.emflow.org/en/latest/run/analyzers.html) |
+| 🗄️&nbsp;`data` | [`Field`](https://docs.enflow.org/en/latest/data/field.html), [`Dataset`](https://docs.enflow.org/en/latest/data/dataset.html), [`DataFeed`](https://docs.enflow.org/en/latest/data/feed.html) — point-in-time data access with availability semantics (leak-proof by construction) |
+| 🧩&nbsp;`problems` | [`Problem`](https://docs.enflow.org/en/latest/problems/problem.html), [`IssueSchedule`](https://docs.enflow.org/en/latest/problems/schedule.html), [`Objective`](https://docs.enflow.org/en/latest/problems/objective.html), metrics ([pinball, MAE, RMSE, peak timing, trading revenue](https://docs.enflow.org/en/latest/problems/metrics.html)) |
+| 🌍&nbsp;`envs` | [`ForecastEnv`](https://docs.enflow.org/en/latest/envs/forecast.html), [`TradingEnv`](https://docs.enflow.org/en/latest/envs/trading.html) — rolling-origin evaluation on the gymnasium API |
+| 🧮&nbsp;`features` | [`Lag`, `Rolling`, `ForecastField`, `Calendar`](https://docs.enflow.org/en/latest/features/spec.html) — declarative, point-in-time-correct feature specs |
+| 🤖&nbsp;`models` | [`Model`](https://docs.enflow.org/en/latest/models/model.html), [`Predictor`](https://docs.enflow.org/en/latest/models/predictor.html), [`Simulator`](https://docs.enflow.org/en/latest/models/simulator.html), [`Optimizer`](https://docs.enflow.org/en/latest/models/optimizer.html), [`Agent`](https://docs.enflow.org/en/latest/models/agent.html) |
+| ♻️&nbsp;`run` | [`Experiment`](https://docs.enflow.org/en/latest/run/experiment.html), [`Result`](https://docs.enflow.org/en/latest/run/result.html), [`Verifier`](https://docs.enflow.org/en/latest/run/verifier.html), [analyzers](https://docs.enflow.org/en/latest/run/analyzers.html) |
 | 🏆&nbsp;`benchmarks` | Historical competition problems: `heftcom2024` (forecasting + trading), `gefcom2012/2014/2017`, `bfcom2018`, `bigdeal2022` |
 
 Below is a diagram of the components' relation to each other and how they together enable creation of reproducible results from energy models. 
@@ -107,10 +107,10 @@ print(result.rank_against(problem))          # place on the official 2024 leader
 ```
 
 Every observation a model sees is served through the point-in-time
-[`DataPortal`](https://docs.emflow.org/en/latest/data/portal.html), so
+[`DataFeed`](https://docs.enflow.org/en/latest/data/feed.html), so
 look-ahead leakage is impossible by construction — which is what makes the
 scores trustworthy for agent benchmarking. Untrusted submissions are scored
-with the [`Verifier`](https://docs.emflow.org/en/latest/run/verifier.html)
+with the [`Verifier`](https://docs.enflow.org/en/latest/run/verifier.html)
 on a held-out split whose labels live in a private repo (see
 `submissions/README.md`).
 
