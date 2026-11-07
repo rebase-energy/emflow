@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **External problems**: other distributions register problems through the
+  `emflow.problems` entry-point group (`icing = "my_pkg.icing.problem"` in
+  `pyproject.toml`); they list and load like packaged ones
+  (`emflow.load_problem("icing:se1")`). Packaged problems win a name
+  collision; a registration that fails to import is skipped with a warning.
+
 ## 0.3.0 (2026-07-07)
 
 - **Integration contract**: `emflow.run.submission` is the stable surface for

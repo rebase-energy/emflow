@@ -1,8 +1,9 @@
 """Problem discovery and loading.
 
 Problems live in packages under ``emflow.benchmarks`` (competition problems —
-the product) and ``emflow.examples`` (tutorials). A package participates by
-providing a ``problem`` module with either
+the product) and ``emflow.examples`` (tutorials), and any installed
+distribution can register more through the ``emflow.problems`` entry-point
+group. A package participates by providing a ``problem`` module with either
 
 * ``list_problem_variants() -> list[str]`` + one ``get_problem_<variant>()``
   factory per variant, or
@@ -14,24 +15,41 @@ from its factory — it still shows up in :func:`list_problems` (marked in
 :func:`problem_status`), so the full roster is visible.
 
 Packages whose name starts with ``_`` (e.g. ``examples/_legacy``) are skipped.
+
+External problems
+-----------------
+A project that keeps its own problems (private data, internal splits) registers
+them in its ``pyproject.toml`` and they load like any packaged one::
+
+    [project.entry-points."emflow.problems"]
+    icing = "my_signals.icing.problem"
+
+    >>> emflow.load_problem("icing:se1")
+
+The entry-point name is the problem's folder name (the part before ``:``) and
+the target is a module following the ``problem`` module convention above.
+Packaged problems win on a name collision.
 """
 
 from __future__ import annotations
 
 import importlib
+from importlib.metadata import entry_points
 import pkgutil
 import typing as t
+import warnings
 
 from .problem import Problem
 
 BASES = ("emflow.benchmarks", "emflow.examples")
+ENTRY_POINT_GROUP = "emflow.problems"
 
 
 class ProblemNotIngestedError(NotImplementedError):
     """Raised by a registered benchmark whose dataset is not yet ingested."""
 
 
-def _iter_problem_modules():
+def _packaged_modules():
     for base in BASES:
         try:
             pkg = importlib.import_module(base)
@@ -45,6 +63,34 @@ def _iter_problem_modules():
             except ModuleNotFoundError:
                 continue
             yield modname.replace("_", "-"), module
+
+
+def _external_modules(name: t.Optional[str] = None):
+    """Problem modules registered by other distributions (``emflow.problems``).
+
+    A registration that fails to import is skipped with a warning rather than
+    taking the whole registry down with it.
+    """
+    for ep in entry_points(group=ENTRY_POINT_GROUP):
+        if name is not None and ep.name != name:
+            continue
+        if ":" in ep.name:
+            warnings.warn(f"emflow.problems entry point {ep.name!r} skipped: names cannot contain ':'")
+            continue
+        try:
+            yield ep.name, ep.load()
+        except Exception as exc:  # noqa: BLE001 — one bad plugin must not hide the rest
+            warnings.warn(f"emflow.problems entry point {ep.name!r} failed to load: {exc!r}")
+
+
+def _iter_problem_modules():
+    seen = set()
+    for name, module in _packaged_modules():
+        seen.add(name)
+        yield name, module
+    for name, module in _external_modules():
+        if name not in seen:
+            yield name, module
 
 
 def list_problems() -> t.List[str]:
@@ -66,6 +112,8 @@ def _problem_module(name: str):
             return importlib.import_module(f"{base}.{modname}.problem")
         except ModuleNotFoundError:
             continue
+    for _, module in _external_modules(folder):
+        return module
     raise KeyError(f"unknown problem {name!r}; known: {list_problems()}")
 
 
@@ -108,17 +156,7 @@ def load_problem(name: str) -> Problem:
     benchmarks, ``KeyError`` for unknown names.
     """
     folder, _, variant = name.partition(":")
-    modname = folder.replace("-", "_")
-
-    module = None
-    for base in BASES:
-        try:
-            module = importlib.import_module(f"{base}.{modname}.problem")
-            break
-        except ModuleNotFoundError:
-            continue
-    if module is None:
-        raise KeyError(f"unknown problem {name!r}; known: {list_problems()}")
+    module = _problem_module(name)
 
     factory_name = f"get_problem_{variant}" if variant else "get_problem"
     factory = getattr(module, factory_name, None)
