@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.2 — 2026-11-07
+
+- **emflow is now sdflow.** This release is a compatibility shim over `sdflow[energy]`:
+  `import emflow` and every `emflow.<module>` import resolve to sdflow's objects and emit
+  a `DeprecationWarning`. The emflow code itself is gone from this package; it lives on,
+  renamed and with energy as an extra, in sdflow 0.1.0.
+
+## Unreleased
+
+- **External problems**: other distributions register problems through the
+  `emflow.problems` entry-point group (`icing = "my_pkg.icing.problem"` in
+  `pyproject.toml`); they list and load like packaged ones
+  (`emflow.load_problem("icing:se1")`). Packaged problems win a name
+  collision; a registration that fails to import is skipped with a warning.
+
 ## 0.3.0 (2026-07-07)
 
 - **Integration contract**: `emflow.run.submission` is the stable surface for

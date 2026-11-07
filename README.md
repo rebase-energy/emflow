@@ -1,3 +1,8 @@
+> **emflow is now [sdflow](https://github.com/rebase-energy/sdflow).** The framework continues there,
+> domain-neutral, with the energy asset classes as `sdflow[energy]`. emflow 0.3.2 is a compatibility
+> shim: every `emflow` import forwards to the same object in sdflow and emits a `DeprecationWarning`.
+> Migrate with `import sdflow as sd` (assets: `sdflow.energy`). This repository is archived.
+
 <div align="center">
 	<img height="80" src="https://github.com/rebase-energy/emflow/blob/main/assets/logo-emflow.png?raw=true" alt="emflow">
 <h2 style="margin-top: 0px;">

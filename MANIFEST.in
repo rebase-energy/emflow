@@ -1,2 +1,0 @@
-exclude examples/*
-recursive-include emflow/examples/data *.csv
