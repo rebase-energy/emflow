@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.2 — 2026-11-07
+
+- **emflow is now sdflow.** This release is a compatibility shim over `sdflow[energy]`:
+  `import emflow` and every `emflow.<module>` import resolve to sdflow's objects and emit
+  a `DeprecationWarning`. The emflow code itself is gone from this package; it lives on,
+  renamed and with energy as an extra, in sdflow 0.1.0.
+
 ## Unreleased
 
 - **External problems**: other distributions register problems through the
